@@ -1,27 +1,66 @@
 @import "tailwindcss";
 
+/* ============================================================
+   UAESinger — "Velvet & Spotlight"
+   A live-performance house after dark: aubergine velvet + amber
+   spotlight. Token names kept (--blue*) so every component inherits
+   the new identity; values remapped to plum. White text stays AA on
+   --blue / --blue-dark / --blue-deep.
+   ============================================================ */
 :root {
-  --blue: #2B7FD6;
-  --blue-dark: #15578F;
-  --blue-deep: #0E3A61;
-  --blue-soft: #EAF3FC;
-  --blue-mid: #CFE3F7;
-  --ink: #101A26;
-  --ink-dim: #5B6B7C;
-  --ink-faint: #8B9AAA;
-  --line: #E3EAF1;
-  --bg2: #F6FAFE;
-  --bg3: #EFF6FD;
-  --gold: #D6A13C;
+  --blue: #5A2E86;        /* velvet — primary */
+  --blue-dark: #45206A;   /* hover / accent text */
+  --blue-deep: #2A0F45;   /* deepest */
+  --blue-soft: #F3ECFA;   /* pale lilac tint */
+  --blue-mid: #DAC7EC;    /* mid lilac */
+
+  --ink: #1C1326;         /* aubergine near-black */
+  --ink-dim: #6A5C77;
+  --ink-faint: #9C8FA9;
+  --line: #EBE4F1;
+  --bg2: #F8F4FC;
+  --bg3: #F1E8F9;
+
+  --gold: #F5A623;        /* spotlight amber — stars & accents */
+  --amber: #F5A623;
+  --coral: #F0533B;       /* hot gel */
+  --stage: #1C1326;       /* dark stage base */
+  --stage-2: #2A1838;     /* raised stage surface */
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   color: var(--ink);
-  background: #fff;
+  background: #FDFCFE;
   -webkit-font-smoothing: antialiased;
 }
 
-.font-display { font-family: var(--font-bodoni), Georgia, serif; }
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+/* Signature: live equalizer bars */
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.28); }
+  50%      { transform: scaleY(1); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq 1s ease-in-out infinite;
+}
+
+/* Spotlight page-load bloom for the hero headline */
+@keyframes bloom {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.bloom { animation: bloom 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar { animation: none; transform: scaleY(0.6); }
+  .bloom  { animation: none; }
+  html    { scroll-behavior: auto; }
+}

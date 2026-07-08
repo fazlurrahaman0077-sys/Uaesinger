@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, Inter } from "next/font/google";
+import { Fraunces, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+// Fraunces — theatrical, optical display face (marquee character).
+const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700", "900"],
+  style: ["normal", "italic"],
 });
 
-const bodoniModa = Bodoni_Moda({
+// Hanken Grotesk — warm humanist body, not the default Inter.
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-bodoni",
-  weight: ["500", "600", "700", "800"],
+  variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -29,8 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${bodoniModa.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${fraunces.variable} ${hanken.variable}`}>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

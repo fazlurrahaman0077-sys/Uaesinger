@@ -1,7 +1,7 @@
 const FAQS = [
   {
     q: "How do I hire a singer or DJ in Dubai through UAESinger?",
-    a: "Browse the Singers or DJs & bands category, filter by Dubai, and watch each artist's performance video. Subscribe to a plan to unlock contact details, then message the artist directly to discuss your event and pricing.",
+    a: "Browse the Singers or DJs & bands category and filter by Dubai. Sign in and send a booking request on any profile — the UAESinger team confirms the artist's availability and handles the details for your event.",
   },
   {
     q: "Do you list talent in Abu Dhabi, Sharjah and the Northern Emirates, not just Dubai?",

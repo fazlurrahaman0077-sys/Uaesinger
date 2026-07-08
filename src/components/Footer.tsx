@@ -1,20 +1,18 @@
-"use client";
+import Link from "next/link";
+import Logo from "@/components/Logo";
+import { CATEGORIES } from "@/lib/artists";
 
-const LINKS = {
-  Platform: [
-    { label: "Browse talent", id: "talent" },
-    { label: "For artists", id: "artists" },
-    { label: "Pricing", id: "pricing" },
-    { label: "Blog", id: "" },
-  ],
-  Categories: ["Singers", "DJs & bands", "MCs & hosts", "Photographers"],
-  Cities: ["Dubai", "Abu Dhabi", "Sharjah", "Northern Emirates"],
-};
+const PLATFORM = [
+  { label: "Browse talent", href: "/artists" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "For artists", href: "/artists/new" },
+  { label: "Blog", href: "/blog" },
+  { label: "Sign in", href: "/signin" },
+];
+
+const CITIES = ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah", "Fujairah"];
 
 export default function Footer() {
-  const scrollTo = (id: string) =>
-    id && document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-
   return (
     <footer className="bg-[var(--bg2)] border-t border-[var(--line)] pt-14 pb-8 px-5">
       <div className="max-w-[1180px] mx-auto">
@@ -22,13 +20,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8 mb-10">
           {/* Brand */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--blue)] to-[var(--blue-deep)] flex items-center justify-center text-white text-[13px] font-bold">
-                US
-              </span>
-              <span className="font-display text-[19px] font-bold text-[var(--ink)]">
-                UAE<span className="text-[var(--blue)]">Singer</span>
-              </span>
+            <div className="mb-3">
+              <Logo size={30} />
             </div>
             <p className="text-[12.5px] text-[var(--ink-dim)] leading-relaxed max-w-[240px]">
               The UAE&apos;s directory for booking verified singers, DJs, bands, MCs, photographers and entertainers — for events and full-time roles.
@@ -38,34 +31,38 @@ export default function Footer() {
           {/* Platform */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-4">Platform</h4>
-            {LINKS.Platform.map((l) => (
-              <button
+            {PLATFORM.map((l) => (
+              <Link
                 key={l.label}
-                onClick={() => scrollTo(l.id)}
-                className="block text-[13px] text-[var(--ink-dim)] mb-2.5 hover:text-[var(--blue-dark)] transition-colors cursor-pointer bg-transparent border-none p-0 text-left w-full"
+                href={l.href}
+                className="block text-[13px] text-[var(--ink-dim)] mb-2.5 hover:text-[var(--blue-dark)] transition-colors"
               >
                 {l.label}
-              </button>
+              </Link>
             ))}
           </div>
 
           {/* Categories */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-4">Categories</h4>
-            {LINKS.Categories.map((l) => (
-              <a key={l} href="#" className="block text-[13px] text-[var(--ink-dim)] mb-2.5 hover:text-[var(--blue-dark)] transition-colors">
-                {l}
-              </a>
+            {CATEGORIES.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/artists?category=${c.slug}`}
+                className="block text-[13px] text-[var(--ink-dim)] mb-2.5 hover:text-[var(--blue-dark)] transition-colors"
+              >
+                {c.label}
+              </Link>
             ))}
           </div>
 
           {/* Cities */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-4">Cities</h4>
-            {LINKS.Cities.map((l) => (
-              <a key={l} href="#" className="block text-[13px] text-[var(--ink-dim)] mb-2.5 hover:text-[var(--blue-dark)] transition-colors">
+            {CITIES.map((l) => (
+              <Link key={l} href="/artists" className="block text-[13px] text-[var(--ink-dim)] mb-2.5 hover:text-[var(--blue-dark)] transition-colors">
                 {l}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
