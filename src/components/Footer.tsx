@@ -17,9 +17,9 @@ export default function Footer() {
     <footer className="bg-[var(--bg2)] border-t border-[var(--line)] pt-14 pb-8 px-5">
       <div className="max-w-[1180px] mx-auto">
         {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr] gap-x-6 gap-y-9 mb-10 items-start">
           {/* Brand */}
-          <div className="col-span-2 sm:col-span-2 lg:col-span-1">
+          <div className="col-span-2 md:col-span-1">
             <div className="mb-3">
               <Logo size={30} />
             </div>
@@ -45,7 +45,7 @@ export default function Footer() {
           {/* Categories */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-4">Categories</h4>
-            {CATEGORIES.map((c) => (
+            {CATEGORIES.slice(0, 7).map((c) => (
               <Link
                 key={c.slug}
                 href={`/artists?category=${c.slug}`}
@@ -87,9 +87,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="flex flex-wrap items-center justify-between gap-3 text-[11.5px] text-[var(--ink-faint)]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11.5px] text-[var(--ink-faint)]">
           <span>© 2026 UAESinger. Booking talent across the Emirates.</span>
-          <span className="flex gap-4">
+          <span className="flex gap-5">
             <a href="#" className="hover:text-[var(--ink-dim)] transition-colors">Privacy</a>
             <a href="#" className="hover:text-[var(--ink-dim)] transition-colors">Terms</a>
             <Link href="/contact" className="hover:text-[var(--ink-dim)] transition-colors">Contact</Link>
