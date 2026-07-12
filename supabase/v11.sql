@@ -22,3 +22,7 @@ drop policy if exists "payments_update_own" on public.payments;
 create policy "payments_insert_pending_own"
   on public.payments for insert
   with check (auth.uid() = user_id and status = 'pending');
+
+-- Close the quota-bypass: contact unlocks are now written by the service-role
+-- client (revealContact enforces the plan credit limit first). Reads stay open.
+drop policy if exists "unlocks_insert_own" on public.contact_unlocks;
