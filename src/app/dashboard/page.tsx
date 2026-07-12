@@ -10,7 +10,7 @@ import { getPlan } from "@/lib/plans";
 import { categoryLabel, priceRange } from "@/lib/artists";
 import { listMyEnquiries, listIncomingEnquiries, BOOKING_STATUSES, type Enquiry } from "@/lib/bookings";
 import { publicVideoUrl } from "@/lib/videos";
-import { updateBookingStatus, updateListing } from "./actions";
+import { updateBookingStatus, updateListing, deleteListing } from "./actions";
 import { removeVideo } from "./video-actions";
 import VideoUploader from "@/components/VideoUploader";
 import ShareButton from "@/components/ShareButton";
@@ -263,6 +263,19 @@ async function CreatorView({ userId }: { userId: string }) {
                   Save changes
                 </button>
               </form>
+              {/* Danger zone — separate form so delete never submits the edit form */}
+              <details className="mt-3">
+                <summary className="text-[12px] text-[var(--ink-faint)] cursor-pointer hover:text-[var(--coral)] list-none">Delete this listing</summary>
+                <div className="mt-2 p-3.5 rounded-lg bg-red-50 border border-red-100">
+                  <p className="text-[12px] text-[var(--ink-dim)] mb-3">Permanently removes this listing, its videos, photos and enquiries. This can&apos;t be undone.</p>
+                  <form action={deleteListing}>
+                    <input type="hidden" name="artistId" value={a.id} />
+                    <button className="text-[12.5px] font-semibold text-white bg-[var(--coral)] px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
+                      Yes, delete listing
+                    </button>
+                  </form>
+                </div>
+              </details>
 
               {/* Enquiry inbox */}
               <div>
