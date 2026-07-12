@@ -130,16 +130,15 @@ export default async function AdminPage() {
                       >
                         {a.is_published ? "Live" : "Hidden"}
                       </span>
+                      <Link href={`/artists/${a.slug}`} className={btn}>View</Link>
                       <form action={toggleArtist}>
                         <input type="hidden" name="id" value={a.id} />
                         <input type="hidden" name="publish" value={(!a.is_published).toString()} />
-                        <button className="text-[12px] font-semibold text-[var(--blue-dark)] hover:underline">
-                          {a.is_published ? "Hide" : "Publish"}
-                        </button>
+                        <button className={btn}>{a.is_published ? "Hide" : "Publish"}</button>
                       </form>
                       <form action={deleteArtist}>
                         <input type="hidden" name="id" value={a.id} />
-                        <button className="text-[12px] font-semibold text-[var(--coral)] hover:underline">Delete</button>
+                        <button className={btnDanger}>Delete</button>
                       </form>
                     </div>
                   ))}
@@ -176,19 +175,15 @@ export default async function AdminPage() {
                       >
                         {p.published ? "Live" : "Draft"}
                       </span>
-                      <Link href={`/admin/posts/${p.id}/edit`} className="text-[12px] font-semibold text-[var(--blue-dark)] hover:underline">
-                        Edit
-                      </Link>
+                      <Link href={`/admin/posts/${p.id}/edit`} className={btn}>Edit</Link>
                       <form action={togglePost}>
                         <input type="hidden" name="id" value={p.id} />
                         <input type="hidden" name="publish" value={(!p.published).toString()} />
-                        <button className="text-[12px] font-semibold text-[var(--ink-dim)] hover:underline">
-                          {p.published ? "Unpublish" : "Publish"}
-                        </button>
+                        <button className={btn}>{p.published ? "Unpublish" : "Publish"}</button>
                       </form>
                       <form action={deletePost}>
                         <input type="hidden" name="id" value={p.id} />
-                        <button className="text-[12px] font-semibold text-[var(--coral)] hover:underline">Delete</button>
+                        <button className={btnDanger}>Delete</button>
                       </form>
                     </div>
                   ))}
@@ -201,3 +196,9 @@ export default async function AdminPage() {
     </>
   );
 }
+
+// Shared small action buttons for the admin lists.
+const btn =
+  "text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-[var(--line)] text-[var(--ink-dim)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all whitespace-nowrap";
+const btnDanger =
+  "text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-red-200 text-[var(--coral)] hover:bg-red-50 transition-all whitespace-nowrap";

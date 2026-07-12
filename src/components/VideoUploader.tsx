@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { addVideo } from "@/app/dashboard/video-actions";
 
-const MAX_BYTES = 100 * 1024 * 1024; // 100 MB — matches the bucket limit.
+const MAX_BYTES = 500 * 1024 * 1024; // 500 MB — matches the bucket limit.
 
 export default function VideoUploader({ artistId, userId }: { artistId: string; userId: string }) {
   const [busy, setBusy] = useState(false);
@@ -18,7 +18,7 @@ export default function VideoUploader({ artistId, userId }: { artistId: string; 
     const title = (form.elements.namedItem("title") as HTMLInputElement).value;
     if (!file) return setError("Choose a video file.");
     if (!file.type.startsWith("video/")) return setError("That's not a video file.");
-    if (file.size > MAX_BYTES) return setError("Video is over the 100 MB limit.");
+    if (file.size > MAX_BYTES) return setError("Video is over the 500 MB limit.");
 
     setBusy(true);
     try {
@@ -62,7 +62,7 @@ export default function VideoUploader({ artistId, userId }: { artistId: string; 
       >
         {busy ? "Uploading…" : "Upload video"}
       </button>
-      <p className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 100 MB.</p>
+      <p className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 500 MB.</p>
     </form>
   );
 }

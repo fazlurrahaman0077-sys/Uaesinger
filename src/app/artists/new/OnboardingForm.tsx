@@ -192,7 +192,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
           <label className="flex flex-col items-center justify-center gap-1.5 py-7 rounded-xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] cursor-pointer hover:border-[var(--blue)] transition-colors">
             <span className="text-[24px]">🎬</span>
             <span className="text-[13px] font-semibold text-[var(--blue-dark)]">Add videos</span>
-            <span className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 100 MB each</span>
+            <span className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 500 MB each</span>
             <input type="file" accept="video/mp4,video/webm,video/quicktime" multiple onChange={pickVideos} className="hidden" />
           </label>
           {videos.length > 0 && (
