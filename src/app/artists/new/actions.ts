@@ -51,6 +51,7 @@ export async function createArtist(formData: FormData) {
     languages: list(formData.get("languages")),
     genres: list(formData.get("genres")),
     subcategory: String(formData.get("subcategory") ?? "").trim() || null,
+    gender: String(formData.get("gender") ?? "").trim() || null,
     tags: list(formData.get("tags")),
     availability: String(formData.get("availability") ?? "Available now"),
     price_min: Number(formData.get("price_min")) || null,

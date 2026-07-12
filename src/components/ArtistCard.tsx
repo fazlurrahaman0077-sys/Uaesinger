@@ -38,7 +38,9 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
           <span className="font-display text-[16px] font-semibold text-[var(--ink)]">{artist.name}</span>
           <span className="text-[12px] text-[var(--gold)] font-bold ml-2 flex-shrink-0">★ {artist.rating}</span>
         </div>
-        <p className="text-[12.5px] text-[var(--ink-dim)] mb-2">{artist.tagline}</p>
+        <p className="text-[12.5px] text-[var(--ink-dim)] mb-2">
+          {artist.subcategory || artist.tagline}
+        </p>
         <div className="flex items-center justify-between gap-2">
           <p className="text-[11.5px] text-[var(--ink-faint)]">{artist.gigs} gigs · {artist.reviews} reviews</p>
           {priceRange(artist.priceMin, artist.priceMax) && (

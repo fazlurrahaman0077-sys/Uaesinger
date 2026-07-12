@@ -3,8 +3,9 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArtistCard from "@/components/ArtistCard";
-import { CATEGORIES, SUBCATEGORIES, EMIRATES, getCategory } from "@/lib/artists";
+import { CATEGORIES, SUBCATEGORIES, getCategory } from "@/lib/artists";
 import { listArtists } from "@/lib/talent";
+import FilterBar from "@/components/FilterBar";
 
 export const metadata: Metadata = {
   title: "Browse & search talent | UAESinger",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     "Search verified singers, DJs, bands, dancers, MCs, magicians, comedians, photographers and entertainers for hire across Dubai, Abu Dhabi, Sharjah and the UAE.",
 };
 
-type SP = { category?: string; subcategory?: string; city?: string; q?: string; tag?: string };
+type SP = { category?: string; subcategory?: string; city?: string; gender?: string; q?: string; tag?: string };
 
 function buildHref(base: SP, patch: Partial<SP>): string {
   const merged = { ...base, ...patch };
@@ -30,10 +31,10 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
     category: active,
     subcategory: sp.subcategory,
     city: sp.city,
+    gender: sp.gender,
     tag: sp.tag,
     q: sp.q,
   });
-  const base: SP = { category: sp.category, subcategory: sp.subcategory, city: sp.city, q: sp.q, tag: sp.tag };
 
   return (
     <>
@@ -45,27 +46,18 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
               Find the perfect act for your event
             </h1>
 
-            {/* Search — GET form keeps URLs shareable & SEO-friendly */}
-            <form action="/artists" method="get" className="flex flex-col sm:flex-row gap-2.5 max-w-[720px]">
-              {sp.category && <input type="hidden" name="category" value={sp.category} />}
-              {sp.subcategory && <input type="hidden" name="subcategory" value={sp.subcategory} />}
-              <input
-                name="q"
-                defaultValue={sp.q ?? ""}
-                placeholder="Search by name, style or keyword — e.g. Arabic singer, belly dancer"
-                className="flex-1 px-4 py-3 rounded-xl border border-[var(--line)] text-[14px] bg-white outline-none focus:border-[var(--blue)] focus:ring-2 focus:ring-[var(--blue-soft)]"
-              />
-              <select name="city" defaultValue={sp.city ?? ""} className="px-4 py-3 rounded-xl border border-[var(--line)] text-[14px] bg-white outline-none focus:border-[var(--blue)]">
-                <option value="">All Emirates</option>
-                {EMIRATES.map((e) => <option key={e} value={e}>{e}</option>)}
-              </select>
-              <button className="px-6 py-3 rounded-xl bg-[var(--blue)] text-white text-[14px] font-semibold hover:bg-[var(--blue-dark)] transition-all">Search</button>
-            </form>
+            <FilterBar
+              category={sp.category}
+              subcategory={sp.subcategory}
+              defaultQ={sp.q ?? ""}
+              defaultCity={sp.city ?? ""}
+              defaultGender={sp.gender ?? ""}
+            />
 
             <p className="text-[13px] text-[var(--ink-dim)] mt-3">
               {list.length} {list.length === 1 ? "act" : "acts"}
               {active !== "all" ? ` in ${getCategory(active)!.label}` : ""}
-              {sp.city ? ` · ${sp.city}` : ""}{sp.q ? ` · “${sp.q}”` : ""}
+              {sp.city ? ` · ${sp.city}` : ""}{sp.gender ? ` · ${sp.gender}` : ""}{sp.q ? ` · “${sp.q}”` : ""}
             </p>
           </div>
         </section>

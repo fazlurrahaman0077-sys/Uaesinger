@@ -79,7 +79,14 @@ export type Artist = {
   photoPath: string | null;
   subcategory: string | null;
   tags: string[];
+  gender: string | null;
 };
+
+export const GENDERS = [
+  { value: "female", label: "Female" },
+  { value: "male", label: "Male" },
+  { value: "group", label: "Group / Duo" },
+];
 
 // Public URL for an uploaded creator profile photo.
 export function publicPhotoUrl(path: string): string {

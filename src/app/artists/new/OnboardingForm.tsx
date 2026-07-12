@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CATEGORIES, SUBCATEGORIES, EMIRATES, categoryLabel, priceRange, initials } from "@/lib/artists";
+import { CATEGORIES, SUBCATEGORIES, EMIRATES, GENDERS, categoryLabel, priceRange, initials } from "@/lib/artists";
+import Select from "@/components/Select";
 import { createArtist } from "./actions";
 
 const AVAILABILITY = ["Available now", "Booking 2 weeks out", "Limited dates"];
@@ -14,6 +15,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     name: "",
     category: "",
     subcategory: "",
+    gender: "",
     tags: "",
     city: "",
     tagline: "",
@@ -29,6 +31,9 @@ export default function OnboardingForm({ userId }: { userId: string }) {
   });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setF((p) => ({ ...p, [k]: e.target.value }));
+  // For the custom <Select> (value-based). Changing category resets subcategory.
+  const setV = (k: keyof typeof f) => (v: string) =>
+    setF((p) => ({ ...p, [k]: v, ...(k === "category" ? { subcategory: "" } : {}) }));
 
   const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
   const [videos, setVideos] = useState<Vid[]>([]);
@@ -124,26 +129,26 @@ export default function OnboardingForm({ userId }: { userId: string }) {
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Category" required>
-              <select value={f.category} onChange={set("category")} className={input}>
-                <option value="" disabled>Select…</option>
-                {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.emoji} {c.label}</option>)}
-              </select>
+              <Select value={f.category} onChange={setV("category")} placeholder="Select a category…"
+                options={CATEGORIES.map((c) => ({ value: c.slug, label: `${c.emoji} ${c.label}` }))} />
             </Field>
             <Field label="Based in" required>
-              <select value={f.city} onChange={set("city")} className={input}>
-                <option value="" disabled>Select…</option>
-                {EMIRATES.map((e) => <option key={e} value={e}>{e}</option>)}
-              </select>
+              <Select value={f.city} onChange={setV("city")} placeholder="Select an Emirate…"
+                options={EMIRATES.map((e) => ({ value: e, label: e }))} />
             </Field>
           </div>
-          {f.category && (SUBCATEGORIES[f.category] ?? []).length > 0 && (
-            <Field label="Specialty" hint="Helps clients find you in search">
-              <select value={f.subcategory} onChange={set("subcategory")} className={input}>
-                <option value="">Select a specialty…</option>
-                {(SUBCATEGORIES[f.category] ?? []).map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {f.category && (SUBCATEGORIES[f.category] ?? []).length > 0 && (
+              <Field label="Specialty" hint="Shown on your profile & used in search">
+                <Select value={f.subcategory} onChange={setV("subcategory")} placeholder="Select a specialty…"
+                  options={(SUBCATEGORIES[f.category] ?? []).map((s) => ({ value: s, label: s }))} />
+              </Field>
+            )}
+            <Field label="Performer type">
+              <Select value={f.gender} onChange={setV("gender")} placeholder="Anyone"
+                options={GENDERS} />
             </Field>
-          )}
+          </div>
           <Field label="One-line tagline">
             <input value={f.tagline} onChange={set("tagline")} placeholder="Wedding & jazz vocalist" className={input} />
           </Field>
@@ -165,9 +170,8 @@ export default function OnboardingForm({ userId }: { userId: string }) {
             <input value={f.tags} onChange={set("tags")} placeholder="wedding, corporate, arabic, bilingual" className={input} />
           </Field>
           <Field label="Availability">
-            <select value={f.availability} onChange={set("availability")} className={input}>
-              {AVAILABILITY.map((a) => <option key={a} value={a}>{a}</option>)}
-            </select>
+            <Select value={f.availability} onChange={setV("availability")}
+              options={AVAILABILITY.map((a) => ({ value: a, label: a }))} />
           </Field>
           <Field label="Price range" hint="AED — shown on your profile">
             <div className="grid grid-cols-2 gap-4">

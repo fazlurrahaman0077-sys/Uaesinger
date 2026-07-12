@@ -137,6 +137,7 @@ export default async function ArtistPage({
                 <div className="mt-6 flex flex-wrap gap-4">
                   <TagRow title="Languages" items={artist.languages} />
                   <TagRow title="Styles" items={artist.genres} />
+                  {artist.tags.length > 0 && <TagRow title="Good for" items={artist.tags} />}
                 </div>
 
                 {photos.length > 0 && (
@@ -174,9 +175,21 @@ export default async function ArtistPage({
                 <span className="text-[13px] text-[var(--gold)] font-bold">★ {artist.rating}</span>
               </div>
               <p className="text-[13.5px] text-[var(--ink-dim)] mb-1">{artist.tagline}</p>
-              <p className="text-[12.5px] text-[var(--ink-faint)] mb-3">
+              <p className="text-[12.5px] text-[var(--ink-faint)] mb-2">
                 {categoryLabel(artist.category)} · {artist.city}
               </p>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {artist.subcategory && (
+                  <span className="text-[11px] font-semibold text-[var(--blue-dark)] bg-[var(--blue-soft)] border border-[var(--blue-mid)] px-2.5 py-1 rounded-full">
+                    {artist.subcategory}
+                  </span>
+                )}
+                {artist.gender && (
+                  <span className="text-[11px] font-medium text-[var(--ink-dim)] bg-white border border-[var(--line)] px-2.5 py-1 rounded-full capitalize">
+                    {artist.gender}
+                  </span>
+                )}
+              </div>
 
               <ShareButton
                 path={`/artists/${artist.slug}`}

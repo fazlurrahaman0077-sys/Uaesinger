@@ -23,10 +23,11 @@ type Row = {
   photo_path: string | null;
   subcategory: string | null;
   tags: string[] | null;
+  gender: string | null;
 };
 
 const COLS =
-  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags";
+  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags, gender";
 
 function toArtist(r: Row): Artist & { id: string } {
   return {
@@ -50,10 +51,11 @@ function toArtist(r: Row): Artist & { id: string } {
     photoPath: r.photo_path,
     subcategory: r.subcategory,
     tags: r.tags ?? [],
+    gender: r.gender,
   };
 }
 
-export type ArtistFilter = { category?: string; subcategory?: string; city?: string; tag?: string; q?: string };
+export type ArtistFilter = { category?: string; subcategory?: string; city?: string; gender?: string; tag?: string; q?: string };
 
 export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & { id: string })[]> {
   const supabase = await createClient();
@@ -61,6 +63,7 @@ export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & 
   if (filter.category && filter.category !== "all") query = query.eq("category_slug", filter.category);
   if (filter.subcategory) query = query.eq("subcategory", filter.subcategory);
   if (filter.city) query = query.eq("city", filter.city);
+  if (filter.gender) query = query.eq("gender", filter.gender);
   if (filter.tag) query = query.contains("tags", [filter.tag]);
   if (filter.q) {
     const term = filter.q.replace(/[%,()]/g, " ").trim();
