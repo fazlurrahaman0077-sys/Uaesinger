@@ -34,6 +34,18 @@ export async function updateBookingStatus(formData: FormData) {
   redirect("/dashboard");
 }
 
+// Creator: delete a listing they own. RLS (artists_owner_all) enforces ownership;
+// artist_contacts / videos / photos / bookings cascade on delete.
+export async function deleteListing(formData: FormData) {
+  const { supabase } = await requireUser();
+  const artistId = String(formData.get("artistId") ?? "");
+  if (!artistId) redirect("/dashboard");
+  await supabase.from("artists").delete().eq("id", artistId);
+  revalidatePath("/dashboard");
+  revalidatePath("/artists");
+  redirect("/dashboard");
+}
+
 // Creator: edit the listing + gated contact for an artist they own. RLS
 // (artists_owner_all / artist_contacts_owner_write) enforces ownership.
 export async function updateListing(formData: FormData) {
