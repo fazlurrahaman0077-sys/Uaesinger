@@ -122,14 +122,6 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Float stat — anchored to the stage */}
-          <div className="hidden sm:flex absolute -bottom-5 -left-6 z-10 bg-[var(--stage-2)] border border-white/10 rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.4)] px-4 py-3 items-center gap-3">
-            <SoundBars bars={4} height={20} size={2.5} gap={2} />
-            <div>
-              <div className="text-[14px] font-bold text-white leading-tight">9,600+</div>
-              <div className="text-[10px] text-white/50">events booked</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

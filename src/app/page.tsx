@@ -1,7 +1,6 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
-import Stats from "@/components/Stats";
 import ArtistGrid from "@/components/ArtistGrid";
 import Cities from "@/components/Cities";
 import HowItWorks from "@/components/HowItWorks";
@@ -19,7 +18,6 @@ export default function Home() {
       <main>
         <Hero />
         <Reveal><TrustBar /></Reveal>
-        <Reveal><Stats /></Reveal>
         <Reveal><ArtistGrid /></Reveal>
         <Reveal><Cities /></Reveal>
         <Reveal><HowItWorks /></Reveal>

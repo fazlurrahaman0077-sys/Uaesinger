@@ -24,10 +24,11 @@ type Row = {
   subcategory: string | null;
   tags: string[] | null;
   gender: string | null;
+  nationality: string | null;
 };
 
 const COLS =
-  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags, gender";
+  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags, gender, nationality";
 
 function toArtist(r: Row): Artist & { id: string } {
   return {
@@ -52,6 +53,7 @@ function toArtist(r: Row): Artist & { id: string } {
     subcategory: r.subcategory,
     tags: r.tags ?? [],
     gender: r.gender,
+    nationality: r.nationality,
   };
 }
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CATEGORIES, SUBCATEGORIES, EMIRATES, GENDERS, categoryLabel, priceRange, initials } from "@/lib/artists";
+import { CATEGORIES, SUBCATEGORIES, EMIRATES, GENDERS, NATIONALITIES, categoryLabel, priceRange, initials } from "@/lib/artists";
 import Select from "@/components/Select";
 import { createArtist } from "./actions";
 
@@ -16,6 +16,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     category: "",
     subcategory: "",
     gender: "",
+    nationality: "",
     tags: "",
     city: "",
     tagline: "",
@@ -147,6 +148,10 @@ export default function OnboardingForm({ userId }: { userId: string }) {
             <Field label="Performer type">
               <Select value={f.gender} onChange={setV("gender")} placeholder="Anyone"
                 options={GENDERS} />
+            </Field>
+            <Field label="Nationality" hint="Shown on your profile">
+              <Select value={f.nationality} onChange={setV("nationality")} placeholder="Select nationality…" searchable
+                options={NATIONALITIES.map((n) => ({ value: n, label: n }))} />
             </Field>
           </div>
           <Field label="One-line tagline">

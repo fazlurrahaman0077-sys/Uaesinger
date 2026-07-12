@@ -13,6 +13,7 @@ export default function Select({
   options,
   placeholder = "Select…",
   className = "",
+  searchable = false,
 }: {
   name?: string;
   value: string;
@@ -20,10 +21,15 @@ export default function Select({
   options: Option[];
   placeholder?: string;
   className?: string;
+  searchable?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const selected = options.find((o) => o.value === value);
+  const shown = searchable && query
+    ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
+    : options;
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -36,6 +42,7 @@ export default function Select({
   function pick(v: string) {
     onChange?.(v);
     setOpen(false);
+    setQuery("");
   }
 
   return (
@@ -60,7 +67,19 @@ export default function Select({
           role="listbox"
           className="absolute z-50 mt-1.5 w-full max-h-64 overflow-auto bg-white border border-[var(--line)] rounded-xl shadow-[0_16px_40px_rgba(16,26,38,0.14)] py-1.5"
         >
-          {options.map((o) => (
+          {searchable && (
+            <li className="px-2 pb-1.5 sticky top-0 bg-white">
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Type to search…"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--line)] text-[13px] outline-none focus:border-[var(--blue)]"
+              />
+            </li>
+          )}
+          {shown.length === 0 && <li className="px-3.5 py-2 text-[13px] text-[var(--ink-faint)]">No matches</li>}
+          {shown.map((o) => (
             <li key={o.value}>
               <button
                 type="button"

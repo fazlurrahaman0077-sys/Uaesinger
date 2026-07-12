@@ -80,7 +80,32 @@ export type Artist = {
   subcategory: string | null;
   tags: string[];
   gender: string | null;
+  nationality: string | null;
 };
+
+// All nationalities (demonyms). Popular-in-UAE ones first, then the full A–Z list.
+export const NATIONALITIES = [
+  "Emirati", "Indian", "Pakistani", "Filipino", "Egyptian", "Lebanese", "British", "American",
+  "Afghan", "Albanian", "Algerian", "Angolan", "Argentine", "Armenian", "Australian", "Austrian",
+  "Azerbaijani", "Bahraini", "Bangladeshi", "Belarusian", "Belgian", "Beninese", "Bolivian",
+  "Bosnian", "Brazilian", "Bulgarian", "Burkinabé", "Burmese", "Burundian", "Cambodian",
+  "Cameroonian", "Canadian", "Chadian", "Chilean", "Chinese", "Colombian", "Congolese", "Croatian",
+  "Cuban", "Cypriot", "Czech", "Danish", "Djiboutian", "Dominican", "Dutch", "Ecuadorian",
+  "Emirati (UAE)", "Eritrean", "Estonian", "Ethiopian", "Fijian", "Finnish", "French", "Gabonese",
+  "Gambian", "Georgian", "German", "Ghanaian", "Greek", "Guatemalan", "Guinean", "Haitian",
+  "Honduran", "Hungarian", "Icelandic", "Indonesian", "Iranian", "Iraqi", "Irish", "Israeli",
+  "Italian", "Ivorian", "Jamaican", "Japanese", "Jordanian", "Kazakh", "Kenyan", "Kuwaiti",
+  "Kyrgyz", "Lao", "Latvian", "Liberian", "Libyan", "Lithuanian", "Luxembourgish", "Macedonian",
+  "Malagasy", "Malawian", "Malaysian", "Maldivian", "Malian", "Maltese", "Mauritanian", "Mauritian",
+  "Mexican", "Moldovan", "Mongolian", "Montenegrin", "Moroccan", "Mozambican", "Namibian", "Nepali",
+  "New Zealander", "Nicaraguan", "Nigerien", "Nigerian", "North Korean", "Norwegian", "Omani",
+  "Palestinian", "Panamanian", "Paraguayan", "Peruvian", "Polish", "Portuguese", "Qatari",
+  "Romanian", "Russian", "Rwandan", "Salvadoran", "Saudi", "Senegalese", "Serbian", "Sierra Leonean",
+  "Singaporean", "Slovak", "Slovenian", "Somali", "South African", "South Korean", "South Sudanese",
+  "Spanish", "Sri Lankan", "Sudanese", "Swedish", "Swiss", "Syrian", "Taiwanese", "Tajik",
+  "Tanzanian", "Thai", "Togolese", "Tunisian", "Turkish", "Turkmen", "Ugandan", "Ukrainian",
+  "Uruguayan", "Uzbek", "Venezuelan", "Vietnamese", "Yemeni", "Zambian", "Zimbabwean", "Other",
+];
 
 export const GENDERS = [
   { value: "female", label: "Female" },

@@ -189,6 +189,11 @@ export default async function ArtistPage({
                     {artist.gender}
                   </span>
                 )}
+                {artist.nationality && (
+                  <span className="text-[11px] font-medium text-[var(--ink-dim)] bg-white border border-[var(--line)] px-2.5 py-1 rounded-full">
+                    🌍 {artist.nationality}
+                  </span>
+                )}
               </div>
 
               <ShareButton
