@@ -3,82 +3,106 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArtistCard from "@/components/ArtistCard";
-import { CATEGORIES, getCategory } from "@/lib/artists";
+import { CATEGORIES, SUBCATEGORIES, EMIRATES, getCategory } from "@/lib/artists";
 import { listArtists } from "@/lib/talent";
 
 export const metadata: Metadata = {
-  title: "Browse talent | UAESinger",
+  title: "Browse & search talent | UAESinger",
   description:
-    "Browse verified singers, DJs, bands, dancers, MCs, photographers and entertainers for hire across Dubai, Abu Dhabi, Sharjah and the UAE.",
+    "Search verified singers, DJs, bands, dancers, MCs, magicians, comedians, photographers and entertainers for hire across Dubai, Abu Dhabi, Sharjah and the UAE.",
 };
 
-export default async function ArtistsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const { category } = await searchParams;
-  const active = category && getCategory(category) ? category : "all";
-  const list = await listArtists(active);
+type SP = { category?: string; subcategory?: string; city?: string; q?: string; tag?: string };
+
+function buildHref(base: SP, patch: Partial<SP>): string {
+  const merged = { ...base, ...patch };
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(merged)) if (v) params.set(k, v);
+  const s = params.toString();
+  return s ? `/artists?${s}` : "/artists";
+}
+
+export default async function ArtistsPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const sp = await searchParams;
+  const active = sp.category && getCategory(sp.category) ? sp.category : "all";
+  const subs = active !== "all" ? SUBCATEGORIES[active] ?? [] : [];
+  const list = await listArtists({
+    category: active,
+    subcategory: sp.subcategory,
+    city: sp.city,
+    tag: sp.tag,
+    q: sp.q,
+  });
+  const base: SP = { category: sp.category, subcategory: sp.subcategory, city: sp.city, q: sp.q, tag: sp.tag };
 
   return (
     <>
       <Header />
       <main className="bg-[var(--bg2)] min-h-screen">
-        <section className="px-5 pt-14 pb-8">
+        <section className="px-5 pt-12 pb-6">
           <div className="max-w-[1180px] mx-auto">
-            <p className="text-[12px] font-bold uppercase tracking-widest text-[var(--blue-dark)] mb-2">
-              Browse talent
-            </p>
-            <h1 className="font-display text-[32px] sm:text-[38px] font-semibold text-[var(--ink)] mb-2">
-              Book verified performers across the UAE
+            <h1 className="font-display text-[30px] sm:text-[38px] font-semibold text-[var(--ink)] mb-4">
+              Find the perfect act for your event
             </h1>
-            <p className="text-[14px] text-[var(--ink-dim)] max-w-[560px]">
+
+            {/* Search — GET form keeps URLs shareable & SEO-friendly */}
+            <form action="/artists" method="get" className="flex flex-col sm:flex-row gap-2.5 max-w-[720px]">
+              {sp.category && <input type="hidden" name="category" value={sp.category} />}
+              {sp.subcategory && <input type="hidden" name="subcategory" value={sp.subcategory} />}
+              <input
+                name="q"
+                defaultValue={sp.q ?? ""}
+                placeholder="Search by name, style or keyword — e.g. Arabic singer, belly dancer"
+                className="flex-1 px-4 py-3 rounded-xl border border-[var(--line)] text-[14px] bg-white outline-none focus:border-[var(--blue)] focus:ring-2 focus:ring-[var(--blue-soft)]"
+              />
+              <select name="city" defaultValue={sp.city ?? ""} className="px-4 py-3 rounded-xl border border-[var(--line)] text-[14px] bg-white outline-none focus:border-[var(--blue)]">
+                <option value="">All Emirates</option>
+                {EMIRATES.map((e) => <option key={e} value={e}>{e}</option>)}
+              </select>
+              <button className="px-6 py-3 rounded-xl bg-[var(--blue)] text-white text-[14px] font-semibold hover:bg-[var(--blue-dark)] transition-all">Search</button>
+            </form>
+
+            <p className="text-[13px] text-[var(--ink-dim)] mt-3">
               {list.length} {list.length === 1 ? "act" : "acts"}
-              {active !== "all" ? ` in ${getCategory(active)!.label}` : " across every category"} —
-              verified profiles, ratings and direct booking.
+              {active !== "all" ? ` in ${getCategory(active)!.label}` : ""}
+              {sp.city ? ` · ${sp.city}` : ""}{sp.q ? ` · “${sp.q}”` : ""}
             </p>
           </div>
         </section>
 
-        {/* Category filter — real links so URLs are shareable & SEO-friendly */}
-        <section className="px-5 pb-8">
+        {/* Category pills */}
+        <section className="px-5 pb-3">
           <div className="max-w-[1180px] mx-auto flex flex-wrap gap-2">
-            <CategoryPill href="/artists" label="All" emoji="✦" activeState={active === "all"} />
+            <CategoryPill href="/artists" label="All" emoji="✦" active={active === "all"} />
             {CATEGORIES.map((c) => (
-              <CategoryPill
-                key={c.slug}
-                href={`/artists?category=${c.slug}`}
-                label={c.label}
-                emoji={c.emoji}
-                activeState={active === c.slug}
-              />
+              <CategoryPill key={c.slug} href={buildHref({}, { category: c.slug })} label={c.label} emoji={c.emoji} active={active === c.slug} />
             ))}
           </div>
         </section>
+
+        {/* Subcategory pills (when a category is active) */}
+        {subs.length > 0 && (
+          <section className="px-5 pb-6">
+            <div className="max-w-[1180px] mx-auto flex flex-wrap gap-1.5">
+              <Link href={buildHref({ category: active }, { subcategory: undefined })} className={`text-[12px] px-3 py-1.5 rounded-full border ${!sp.subcategory ? "border-[var(--blue)] bg-[var(--blue-soft)] text-[var(--blue-dark)] font-semibold" : "border-[var(--line)] bg-white text-[var(--ink-dim)] hover:border-[var(--blue-mid)]"}`}>All {getCategory(active)!.label}</Link>
+              {subs.map((s) => (
+                <Link key={s} href={buildHref({ category: active }, { subcategory: s })} className={`text-[12px] px-3 py-1.5 rounded-full border ${sp.subcategory === s ? "border-[var(--blue)] bg-[var(--blue-soft)] text-[var(--blue-dark)] font-semibold" : "border-[var(--line)] bg-white text-[var(--ink-dim)] hover:border-[var(--blue-mid)]"}`}>{s}</Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="px-5 pb-24">
           <div className="max-w-[1180px] mx-auto">
             {list.length === 0 ? (
               <div className="py-20 text-center">
-                <p className="font-display text-[22px] font-semibold text-[var(--ink)] mb-2">
-                  {active === "all" ? "No artists have joined yet" : "No talent in this category yet"}
-                </p>
-                <p className="text-[14px] text-[var(--ink-dim)] mb-6">
-                  Be the first — create your artist profile and start getting booked.
-                </p>
-                <Link
-                  href="/artists/new"
-                  className="inline-block py-2.5 px-6 rounded-lg bg-[var(--blue)] text-white text-[14px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm"
-                >
-                  Join as artist →
-                </Link>
+                <p className="font-display text-[22px] font-semibold text-[var(--ink)] mb-2">No acts match your search</p>
+                <p className="text-[14px] text-[var(--ink-dim)] mb-6">Try a broader search or clear the filters.</p>
+                <Link href="/artists" className="inline-block py-2.5 px-6 rounded-lg bg-[var(--blue)] text-white text-[14px] font-semibold hover:bg-[var(--blue-dark)] transition-all">Clear filters</Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {list.map((a) => (
-                  <ArtistCard key={a.slug} artist={a} />
-                ))}
+                {list.map((a) => <ArtistCard key={a.slug} artist={a} />)}
               </div>
             )}
           </div>
@@ -89,23 +113,13 @@ export default async function ArtistsPage({
   );
 }
 
-function CategoryPill({
-  href,
-  label,
-  emoji,
-  activeState,
-}: {
-  href: string;
-  label: string;
-  emoji: string;
-  activeState: boolean;
-}) {
+function CategoryPill({ href, label, emoji, active }: { href: string; label: string; emoji: string; active: boolean }) {
   return (
     <Link
       href={href}
       className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[13px] font-medium border transition-all ${
-        activeState
-          ? "border-[var(--blue)] bg-[var(--blue)] text-white shadow-[0_4px_12px_rgba(43,127,214,0.25)]"
+        active
+          ? "border-[var(--blue)] bg-[var(--blue)] text-white shadow-[0_4px_12px_rgba(90,46,134,0.25)]"
           : "border-[var(--line)] bg-white text-[var(--ink-dim)] hover:border-[var(--blue-mid)] hover:text-[var(--ink)]"
       }`}
     >

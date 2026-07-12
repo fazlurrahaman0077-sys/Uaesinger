@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CATEGORIES, EMIRATES, categoryLabel, priceRange, initials } from "@/lib/artists";
+import { CATEGORIES, SUBCATEGORIES, EMIRATES, categoryLabel, priceRange, initials } from "@/lib/artists";
 import { createArtist } from "./actions";
 
 const AVAILABILITY = ["Available now", "Booking 2 weeks out", "Limited dates"];
@@ -13,6 +13,8 @@ export default function OnboardingForm({ userId }: { userId: string }) {
   const [f, setF] = useState({
     name: "",
     category: "",
+    subcategory: "",
+    tags: "",
     city: "",
     tagline: "",
     bio: "",
@@ -134,6 +136,14 @@ export default function OnboardingForm({ userId }: { userId: string }) {
               </select>
             </Field>
           </div>
+          {f.category && (SUBCATEGORIES[f.category] ?? []).length > 0 && (
+            <Field label="Specialty" hint="Helps clients find you in search">
+              <select value={f.subcategory} onChange={set("subcategory")} className={input}>
+                <option value="">Select a specialty…</option>
+                {(SUBCATEGORIES[f.category] ?? []).map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </Field>
+          )}
           <Field label="One-line tagline">
             <input value={f.tagline} onChange={set("tagline")} placeholder="Wedding & jazz vocalist" className={input} />
           </Field>
@@ -151,6 +161,9 @@ export default function OnboardingForm({ userId }: { userId: string }) {
               <input value={f.genres} onChange={set("genres")} placeholder="Jazz, Arabic, Pop" className={input} />
             </Field>
           </div>
+          <Field label="Search tags" hint="Comma separated — keywords clients might search (e.g. wedding, corporate, bilingual)">
+            <input value={f.tags} onChange={set("tags")} placeholder="wedding, corporate, arabic, bilingual" className={input} />
+          </Field>
           <Field label="Availability">
             <select value={f.availability} onChange={set("availability")} className={input}>
               {AVAILABILITY.map((a) => <option key={a} value={a}>{a}</option>)}

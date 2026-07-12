@@ -21,10 +21,12 @@ type Row = {
   price_min: number | null;
   price_max: number | null;
   photo_path: string | null;
+  subcategory: string | null;
+  tags: string[] | null;
 };
 
 const COLS =
-  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path";
+  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags";
 
 function toArtist(r: Row): Artist & { id: string } {
   return {
@@ -46,14 +48,25 @@ function toArtist(r: Row): Artist & { id: string } {
     priceMin: r.price_min,
     priceMax: r.price_max,
     photoPath: r.photo_path,
+    subcategory: r.subcategory,
+    tags: r.tags ?? [],
   };
 }
 
-export async function listArtists(categorySlug?: string): Promise<(Artist & { id: string })[]> {
+export type ArtistFilter = { category?: string; subcategory?: string; city?: string; tag?: string; q?: string };
+
+export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & { id: string })[]> {
   const supabase = await createClient();
-  let q = supabase.from("artists").select(COLS).eq("is_published", true).order("created_at", { ascending: false });
-  if (categorySlug && categorySlug !== "all") q = q.eq("category_slug", categorySlug);
-  const { data, error } = await q;
+  let query = supabase.from("artists").select(COLS).eq("is_published", true);
+  if (filter.category && filter.category !== "all") query = query.eq("category_slug", filter.category);
+  if (filter.subcategory) query = query.eq("subcategory", filter.subcategory);
+  if (filter.city) query = query.eq("city", filter.city);
+  if (filter.tag) query = query.contains("tags", [filter.tag]);
+  if (filter.q) {
+    const term = filter.q.replace(/[%,()]/g, " ").trim();
+    query = query.or(`name.ilike.%${term}%,tagline.ilike.%${term}%,subcategory.ilike.%${term}%,bio.ilike.%${term}%`);
+  }
+  const { data, error } = await query.order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as Row[]).map(toArtist);
 }
