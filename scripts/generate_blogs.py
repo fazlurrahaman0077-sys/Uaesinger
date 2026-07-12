@@ -11,7 +11,11 @@ PG = ["psql", "-h", os.environ.get("PGHOST", "aws-0-ap-northeast-1.pooler.supaba
       "-d", "postgres"]
 if not os.environ.get("PGPASSWORD"):
     sys.exit("Missing PGPASSWORD")
-CITIES = ["Dubai", "Abu Dhabi", "Sharjah"]
+CITIES = [
+    "Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain",
+    "Downtown Dubai", "Dubai Marina", "Palm Jumeirah", "Business Bay", "JBR", "DIFC",
+    "Dubai Hills Estate", "Jumeirah", "Al Barsha", "Yas Island", "Saadiyat Island",
+]
 CATS = {
     "singer": ("singer", "Singers"), "band": ("live band", "DJs & Bands"),
     "DJ": ("DJ", "DJs & Bands"), "MC": ("MC & host", "MCs & Hosts"),
@@ -72,7 +76,29 @@ def article_cost(kind, cat_label, city):
     )
     return title, slugify(title), f"A clear 2026 price guide for hiring a {kind} in {city}, plus how to get the best value for your event.", "Planning", body, 4
 
-TOPICS = [article_hire, article_cost]
+def article_best(kind, cat_label, city):
+    title = f"Best {kind.title()}s for Weddings & Events in {city}"
+    body = (
+        f"<h1>{title}</h1>"
+        f"<p>The right {kind} turns a good event in {city} into one guests remember. Here's how to find and "
+        f"shortlist the best for your celebration.</p>"
+        f"<h2>What makes a great {kind}</h2>" + li([
+            "A polished, varied repertoire that reads the room",
+            f"Proven experience at {city} weddings, launches and corporate nights",
+            "Professional sound and a reliable, punctual setup",
+            "Strong reviews and genuine performance videos",
+        ]) +
+        f"<h2>Match the act to your event</h2>"
+        f"<p>Intimate weddings suit an acoustic {kind}; large launches call for a bigger production. Think about "
+        f"your venue size, guest count and the moment you want to create, then filter {cat_label} on UAESinger by "
+        f"style, language and budget.</p>"
+        f"<h2>Book early</h2>"
+        f"<p>The best {kind}s in {city} get reserved months ahead for peak season. Shortlist early, watch their "
+        f"reels, and lock your date.</p>" + cta()
+    )
+    return title, slugify(title), f"How to find and book the best {kind} for weddings and events in {city}, plus what separates the great from the average.", "Tips", body, 5
+
+TOPICS = [article_hire, article_cost, article_best]
 
 def existing():
     r = subprocess.run(PG + ["-tAc", "select slug from posts"], capture_output=True, text=True)

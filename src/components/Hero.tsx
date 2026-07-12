@@ -74,11 +74,14 @@ export default function Hero() {
               <span className="ml-2 text-[10.5px] text-[var(--ink-faint)]">uaesinger.com/layla-hassan</span>
             </div>
 
-            <div className="aspect-[16/10] bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)] relative flex items-center justify-center overflow-hidden">
+            <div className="aspect-[16/10] bg-[var(--blue-deep)] relative flex items-center justify-center overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/creators/singers-1.jpg" alt="Live performer reel" className="absolute inset-0 w-full h-full object-cover" />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/25" />
               <div
                 aria-hidden
                 className="absolute inset-0"
-                style={{ background: "radial-gradient(80% 60% at 50% 0%, rgba(245,166,35,0.35), transparent 60%)" }}
+                style={{ background: "radial-gradient(80% 60% at 50% 0%, rgba(245,166,35,0.25), transparent 60%)" }}
               />
               <span className="absolute top-3 left-3 z-10 flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-[var(--stage)] bg-[var(--amber)] px-2.5 py-1 rounded-full">
                 <SoundBars bars={3} height={9} size={2} gap={1.5} color="var(--stage)" /> Live reel
