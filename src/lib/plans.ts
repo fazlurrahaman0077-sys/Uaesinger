@@ -1,3 +1,8 @@
+// FREE MODE — revealing a contact is free and unlimited, but still requires
+// sign-in + clicking "Reveal" (so unlocks are gated and recorded, not public).
+// Set to false to re-enable the paid subscription + credit quota.
+export const FREE_MODE = true;
+
 // Subscription tiers. `quota` = number of artist contacts you can unlock;
 // null = unlimited. Enforced in the reveal action + DB.
 export type PlanId = "basic" | "standard" | "premium";

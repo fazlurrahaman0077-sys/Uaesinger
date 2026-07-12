@@ -10,7 +10,7 @@ import { listArtistVideos } from "@/lib/videos";
 import { listArtistPhotos } from "@/lib/photos";
 import ShareButton from "@/components/ShareButton";
 import JsonLd from "@/components/JsonLd";
-import { getPlan } from "@/lib/plans";
+import { getPlan, FREE_MODE } from "@/lib/plans";
 import { revealContact, requestBooking } from "./actions";
 
 export async function generateMetadata({
@@ -53,13 +53,15 @@ export default async function ArtistPage({
   // Profile content is public. Contact reveal spends a plan credit; RLS returns
   // the row only for artists the hirer has unlocked.
   const { user, plan, quota, unlocksUsed } = await getAccess();
-  const unlocked = plan ? await isArtistUnlocked(artist.id) : false;
+  // FREE_MODE: any signed-in user can reveal for free. Otherwise a plan is needed.
+  const canReveal = FREE_MODE ? !!user : !!plan;
+  const unlocked = canReveal ? await isArtistUnlocked(artist.id) : false;
   const contact = unlocked ? await getContact(artist.id) : null;
   const videos = await listArtistVideos(artist.id);
   const photos = await listArtistPhotos(artist.id);
   const remaining = quota === null ? null : Math.max(0, quota - unlocksUsed);
   const planInfo = getPlan(plan);
-  const limitReached = !unlocked && quota !== null && remaining === 0;
+  const limitReached = !FREE_MODE && !unlocked && quota !== null && remaining === 0;
 
   const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const coverAbs = artist.photoPath
@@ -274,7 +276,7 @@ export default async function ArtistPage({
                     </details>
                   )}
                   <p className="text-[11px] text-[var(--ink-faint)] text-center mt-2">
-                    Unlocked with your {planInfo?.label ?? "plan"}.
+                    {FREE_MODE ? "Contact revealed — free during launch." : `Unlocked with your ${planInfo?.label ?? "plan"}.`}
                   </p>
                 </div>
               ) : (
@@ -289,8 +291,8 @@ export default async function ArtistPage({
                     </span>
                   </div>
 
-                  {plan && !limitReached ? (
-                    // Active plan with credits left — spend one to reveal.
+                  {canReveal && !limitReached ? (
+                    // Signed in (FREE_MODE) or active plan with credits — reveal.
                     <form action={revealContact}>
                       <input type="hidden" name="slug" value={artist.slug} />
                       <input type="hidden" name="artistId" value={artist.id} />
@@ -304,9 +306,11 @@ export default async function ArtistPage({
                         Reveal contact
                       </button>
                       <p className="text-[11px] text-[var(--ink-faint)] mt-2">
-                        {remaining === null
-                          ? "Unlimited contacts on Premium"
-                          : `${remaining} of ${quota} contacts left this month`}
+                        {FREE_MODE
+                          ? "Free during launch — no subscription needed"
+                          : remaining === null
+                            ? "Unlimited contacts on Premium"
+                            : `${remaining} of ${quota} contacts left this month`}
                       </p>
                     </form>
                   ) : limitReached ? (
@@ -320,6 +324,19 @@ export default async function ArtistPage({
                         className="block w-full py-2.5 rounded-lg bg-[var(--blue)] text-white text-[13.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm"
                       >
                         Upgrade plan
+                      </Link>
+                    </>
+                  ) : FREE_MODE ? (
+                    // Free during launch — just sign in to reveal.
+                    <>
+                      <p className="text-[12.5px] text-[var(--ink-dim)] mb-3">
+                        Sign in to reveal this artist&apos;s direct contact — free during launch.
+                      </p>
+                      <Link
+                        href={`/signin?next=/artists/${artist.slug}`}
+                        className="block w-full py-2.5 rounded-lg bg-[var(--blue)] text-white text-[13.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm"
+                      >
+                        Sign in to reveal
                       </Link>
                     </>
                   ) : (

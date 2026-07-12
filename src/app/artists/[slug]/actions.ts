@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { getAccess } from "@/lib/subscription";
+import { FREE_MODE } from "@/lib/plans";
 
 // Spend one contact credit to unlock this artist (idempotent per artist).
 // The quota is enforced here; the write uses the service-role client so a client
@@ -16,7 +17,9 @@ export async function revealContact(formData: FormData) {
 
   const { user, plan, quota, unlocksUsed } = await getAccess();
   if (!user) redirect(`/signin?next=/artists/${slug}`);
-  if (!plan) redirect("/pricing");
+  // FREE_MODE: any signed-in user reveals for free, unlimited. Otherwise a plan
+  // with remaining credits is required.
+  if (!FREE_MODE && !plan) redirect("/pricing");
 
   const supabase = await createClient();
   const { data: existing } = await supabase
@@ -27,7 +30,7 @@ export async function revealContact(formData: FormData) {
     .maybeSingle();
 
   if (!existing) {
-    if (quota !== null && unlocksUsed >= quota) {
+    if (!FREE_MODE && quota !== null && unlocksUsed >= quota) {
       redirect(`/artists/${slug}?limit=1`);
     }
     const writer = hasAdmin() ? createAdminClient() : supabase;
