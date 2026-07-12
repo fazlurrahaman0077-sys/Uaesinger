@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { type Artist, categoryLabel, initials, priceRange } from "@/lib/artists";
+import { type Artist, categoryLabel, artistImage, priceRange } from "@/lib/artists";
 import { CATEGORIES } from "@/lib/artists";
 
 function emojiFor(slug: string) {
@@ -12,15 +12,22 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
       href={`/artists/${artist.slug}`}
       className="bg-white border border-[var(--line)] rounded-xl overflow-hidden group hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(16,26,38,0.10)] transition-all duration-200 flex flex-col"
     >
-      {/* Initials tile — no photos on-site */}
-      <div className="relative aspect-[4/5] bg-gradient-to-br from-[var(--blue-soft)] via-[var(--blue-mid)] to-[var(--blue-soft)] flex items-center justify-center overflow-hidden">
-        <span className="font-display text-[56px] font-bold text-[var(--blue-deep)]/40 group-hover:scale-110 transition-transform duration-300 select-none">
-          {initials(artist.name)}
-        </span>
-        <span className="absolute top-3 left-3 text-[10px] font-bold tracking-wider uppercase text-white bg-[var(--blue)] px-2.5 py-1 rounded-md shadow-sm">
-          {artist.featuredTag}
-        </span>
-        <span className="absolute bottom-3 left-3 text-[10.5px] font-semibold text-[var(--blue-deep)] bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md">
+      {/* Creator image */}
+      <div className="relative aspect-[4/5] bg-[var(--blue-soft)] overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={artistImage(artist.slug, artist.category, artist.photoPath)}
+          alt={`${artist.name} — ${categoryLabel(artist.category)}`}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+        {artist.featuredTag && (
+          <span className="absolute top-3 left-3 text-[10px] font-bold tracking-wider uppercase text-white bg-[var(--blue)] px-2.5 py-1 rounded-md shadow-sm">
+            {artist.featuredTag}
+          </span>
+        )}
+        <span className="absolute bottom-3 left-3 text-[10.5px] font-semibold text-white bg-black/35 backdrop-blur-sm px-2.5 py-1 rounded-md">
           {emojiFor(artist.category)} {categoryLabel(artist.category)} · {artist.city}
         </span>
       </div>

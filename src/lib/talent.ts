@@ -20,10 +20,11 @@ type Row = {
   featured_tag: string | null;
   price_min: number | null;
   price_max: number | null;
+  photo_path: string | null;
 };
 
 const COLS =
-  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max";
+  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path";
 
 function toArtist(r: Row): Artist & { id: string } {
   return {
@@ -44,6 +45,7 @@ function toArtist(r: Row): Artist & { id: string } {
     featuredTag: r.featured_tag,
     priceMin: r.price_min,
     priceMax: r.price_max,
+    photoPath: r.photo_path,
   };
 }
 

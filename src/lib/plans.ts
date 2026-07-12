@@ -6,6 +6,7 @@ export type Plan = {
   id: PlanId;
   label: string;
   price: string;
+  priceAed: number; // charged amount in AED (Ziina expects minor units → ×100)
   per: string;
   quota: number | null;
   contactsLabel: string;
@@ -18,7 +19,8 @@ export const PLANS: Plan[] = [
   {
     id: "basic",
     label: "Basic",
-    price: "AED 99",
+    price: "AED 149",
+    priceAed: 149,
     per: "/ month",
     quota: 5,
     contactsLabel: "5 artist contacts",
@@ -29,6 +31,7 @@ export const PLANS: Plan[] = [
     id: "standard",
     label: "Standard",
     price: "AED 249",
+    priceAed: 249,
     per: "/ month",
     quota: 15,
     contactsLabel: "15 artist contacts",
@@ -40,6 +43,7 @@ export const PLANS: Plan[] = [
     id: "premium",
     label: "Premium",
     price: "AED 599",
+    priceAed: 599,
     per: "/ month",
     quota: null,
     contactsLabel: "Unlimited contacts",

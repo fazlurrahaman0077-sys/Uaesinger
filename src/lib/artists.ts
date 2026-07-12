@@ -49,7 +49,13 @@ export type Artist = {
   featuredTag: string | null;
   priceMin: number | null;
   priceMax: number | null;
+  photoPath: string | null;
 };
+
+// Public URL for an uploaded creator profile photo.
+export function publicPhotoUrl(path: string): string {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/creator-photos/${path}`;
+}
 
 // "AED 3,000 – 6,000", "From AED 3,000", or null if the artist set no range.
 export function priceRange(min: number | null, max: number | null): string | null {
@@ -68,8 +74,29 @@ export function categoryLabel(slug: string): string {
   return getCategory(slug)?.label ?? slug;
 }
 
-// Initials for the avatar tile (no photos on-site).
+// Initials for the avatar tile (fallback when an image can't load).
 export function initials(name: string): string {
   const words = name.replace(/^The\s+/i, "").split(/\s+/).filter(Boolean);
   return (words[0]?.[0] ?? "").concat(words[1]?.[0] ?? "").toUpperCase();
+}
+
+// Small stable string hash → used to fan artists across the image variants.
+function hash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+// AI-generated category imagery lives in /public/creators/{category}-{1,2,wide}.jpg.
+// Cards use a portrait variant (picked deterministically per artist); the
+// profile hero uses the wide one.
+export function artistImage(slug: string, category: string, photoPath?: string | null): string {
+  if (photoPath) return publicPhotoUrl(photoPath);
+  const variant = (hash(slug) % 2) + 1; // 1 or 2
+  return `/creators/${category}-${variant}.jpg`;
+}
+
+export function artistHero(category: string, photoPath?: string | null): string {
+  if (photoPath) return publicPhotoUrl(photoPath);
+  return `/creators/${category}-wide.jpg`;
 }

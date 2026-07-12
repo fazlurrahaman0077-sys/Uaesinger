@@ -53,6 +53,7 @@ export async function createArtist(formData: FormData) {
     availability: String(formData.get("availability") ?? "Available now"),
     price_min: Number(formData.get("price_min")) || null,
     price_max: Number(formData.get("price_max")) || null,
+    photo_path: String(formData.get("photo_path") ?? "").trim() || null,
     rating: 0,
     reviews: 0,
     gigs: 0,
@@ -62,7 +63,7 @@ export async function createArtist(formData: FormData) {
   });
   if (aErr) redirect("/artists/new?error=save");
 
-  // Fetch the new id, then store gated contact details.
+  // Fetch the new id, then store gated contact details + any uploaded videos.
   const { data: created } = await supabase.from("artists").select("id").eq("slug", slug).maybeSingle();
   if (created) {
     await supabase.from("artist_contacts").insert({
@@ -71,6 +72,20 @@ export async function createArtist(formData: FormData) {
       email: String(formData.get("email") ?? "").trim() || null,
       whatsapp: String(formData.get("whatsapp") ?? "").trim() || null,
     });
+
+    // Videos were uploaded to storage client-side; attach their metadata rows.
+    try {
+      const vids = JSON.parse(String(formData.get("videos") ?? "[]")) as { path: string; title?: string }[];
+      if (Array.isArray(vids) && vids.length) {
+        await supabase.from("artist_videos").insert(
+          vids
+            .filter((v) => v?.path)
+            .map((v) => ({ artist_id: created.id, owner_id: user.id, storage_path: v.path, title: v.title || null })),
+        );
+      }
+    } catch {
+      // Ignore malformed video payloads — the listing is still created.
+    }
   }
 
   // Mark the account as an artist.

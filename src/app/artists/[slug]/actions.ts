@@ -32,3 +32,27 @@ export async function revealContact(formData: FormData) {
   revalidatePath(`/artists/${slug}`);
   redirect(`/artists/${slug}`);
 }
+
+// Send a booking enquiry to the artist. Lands in the creator's dashboard inbox.
+export async function requestBooking(formData: FormData) {
+  const slug = String(formData.get("slug") ?? "");
+  const artistId = String(formData.get("artistId") ?? "");
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect(`/signin?next=/artists/${slug}`);
+
+  await supabase.from("bookings").insert({
+    artist_id: artistId,
+    user_id: user.id,
+    event_date: String(formData.get("event_date") ?? "").trim() || null,
+    message: String(formData.get("message") ?? "").trim() || null,
+    hirer_name: String(formData.get("hirer_name") ?? "").trim() || null,
+    hirer_phone: String(formData.get("hirer_phone") ?? "").trim() || null,
+  });
+
+  revalidatePath(`/artists/${slug}`);
+  redirect(`/artists/${slug}?enquiry=sent`);
+}

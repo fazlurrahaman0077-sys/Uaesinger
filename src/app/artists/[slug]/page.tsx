@@ -3,11 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { CATEGORIES, categoryLabel, initials, priceRange } from "@/lib/artists";
+import { CATEGORIES, categoryLabel, artistHero, priceRange } from "@/lib/artists";
 import { getAccess, isArtistUnlocked, maskedNumber } from "@/lib/subscription";
 import { getArtistBySlug, getContact } from "@/lib/talent";
+import { listArtistVideos } from "@/lib/videos";
 import { getPlan } from "@/lib/plans";
-import { revealContact } from "./actions";
+import { revealContact, requestBooking } from "./actions";
 
 export async function generateMetadata({
   params,
@@ -28,10 +29,10 @@ export default async function ArtistPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ limit?: string }>;
+  searchParams: Promise<{ limit?: string; enquiry?: string }>;
 }) {
   const { slug } = await params;
-  const { limit } = await searchParams;
+  const { limit, enquiry } = await searchParams;
   const artist = await getArtistBySlug(slug);
   if (!artist) notFound();
 
@@ -42,6 +43,7 @@ export default async function ArtistPage({
   const { user, plan, quota, unlocksUsed } = await getAccess();
   const unlocked = plan ? await isArtistUnlocked(artist.id) : false;
   const contact = unlocked ? await getContact(artist.id) : null;
+  const videos = await listArtistVideos(artist.id);
   const remaining = quota === null ? null : Math.max(0, quota - unlocksUsed);
   const planInfo = getPlan(plan);
   const limitReached = !unlocked && quota !== null && remaining === 0;
@@ -65,14 +67,20 @@ export default async function ArtistPage({
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-8 items-start">
             {/* Left: hero + bio */}
             <div>
-              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-[var(--line)] bg-gradient-to-br from-[var(--blue-soft)] via-[var(--blue-mid)] to-[var(--blue-soft)] flex items-center justify-center">
-                <span className="font-display text-[96px] font-bold text-[var(--blue-deep)]/35 select-none">
-                  {initials(artist.name)}
-                </span>
-                <span className="absolute top-4 left-4 text-[11px] font-bold tracking-wider uppercase text-white bg-[var(--blue)] px-3 py-1 rounded-md">
-                  {artist.featuredTag}
-                </span>
-                <span className="absolute bottom-4 left-4 text-[12px] font-semibold text-[var(--blue-deep)] bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-md">
+              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--blue-soft)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={artistHero(artist.category, artist.photoPath)}
+                  alt={`${artist.name} performing`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                {artist.featuredTag && (
+                  <span className="absolute top-4 left-4 text-[11px] font-bold tracking-wider uppercase text-white bg-[var(--blue)] px-3 py-1 rounded-md">
+                    {artist.featuredTag}
+                  </span>
+                )}
+                <span className="absolute bottom-4 left-4 text-[12px] font-semibold text-white bg-black/35 backdrop-blur-sm px-3 py-1.5 rounded-md">
                   {emoji} {categoryLabel(artist.category)} · {artist.city}
                 </span>
               </div>
@@ -96,6 +104,20 @@ export default async function ArtistPage({
                   <TagRow title="Languages" items={artist.languages} />
                   <TagRow title="Styles" items={artist.genres} />
                 </div>
+
+                {videos.length > 0 && (
+                  <div className="mt-8">
+                    <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">Watch {artist.name.split(" ")[0]}</h2>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {videos.map((v) => (
+                        <figure key={v.id} className="rounded-xl overflow-hidden border border-[var(--line)] bg-black">
+                          <video src={v.url} controls preload="metadata" playsInline className="w-full aspect-video bg-black" />
+                          {v.title && <figcaption className="text-[12px] text-[var(--ink-dim)] px-3 py-2 bg-white">{v.title}</figcaption>}
+                        </figure>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -159,9 +181,28 @@ export default async function ArtistPage({
                       WhatsApp: {contact.whatsapp}
                     </a>
                   )}
-                  <button className="w-full mt-3 py-2.5 rounded-lg bg-[var(--blue)] text-white text-[13.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm">
-                    Request booking
-                  </button>
+                  {enquiry === "sent" ? (
+                    <p className="w-full mt-3 py-2.5 rounded-lg bg-green-50 border border-green-200 text-green-700 text-[12.5px] font-semibold text-center">
+                      Enquiry sent — {artist.name.split(" ")[0]} will be in touch.
+                    </p>
+                  ) : (
+                    <details className="mt-3 group">
+                      <summary className="w-full py-2.5 rounded-lg bg-[var(--blue)] text-white text-[13.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm text-center cursor-pointer list-none">
+                        Request booking
+                      </summary>
+                      <form action={requestBooking} className="mt-3 flex flex-col gap-2.5 text-left">
+                        <input type="hidden" name="slug" value={artist.slug} />
+                        <input type="hidden" name="artistId" value={artist.id} />
+                        <input name="hirer_name" required placeholder="Your name" className={enquiryInput} />
+                        <input name="hirer_phone" placeholder="Your phone (optional)" className={enquiryInput} />
+                        <input name="event_date" type="date" className={enquiryInput} />
+                        <textarea name="message" rows={3} placeholder="Event details — date, venue, what you need." className={`${enquiryInput} resize-y`} />
+                        <button type="submit" className="py-2.5 rounded-lg bg-[var(--blue)] text-white text-[13px] font-semibold hover:bg-[var(--blue-dark)] transition-all">
+                          Send enquiry
+                        </button>
+                      </form>
+                    </details>
+                  )}
                   <p className="text-[11px] text-[var(--ink-faint)] text-center mt-2">
                     Unlocked with your {planInfo?.label ?? "plan"}.
                   </p>
@@ -243,6 +284,9 @@ export default async function ArtistPage({
     </>
   );
 }
+
+const enquiryInput =
+  "px-3 py-2 rounded-lg border border-[var(--line)] text-[13px] text-[var(--ink)] outline-none focus:border-[var(--blue)] focus:ring-2 focus:ring-[var(--blue-soft)] transition-all w-full bg-white";
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (

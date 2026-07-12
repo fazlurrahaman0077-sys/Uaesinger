@@ -8,6 +8,7 @@ export type Post = {
   category: string | null;
   body: string | null;
   read_mins: number;
+  published: boolean;
   created_at: string;
 };
 
@@ -24,6 +25,14 @@ export async function listPosts(): Promise<Post[]> {
 export async function getPost(slug: string): Promise<Post | null> {
   const supabase = await createClient();
   const { data } = await supabase.from("posts").select("*").eq("slug", slug).maybeSingle();
+  return (data as Post) ?? null;
+}
+
+// Admin-only: fetch any post (incl. drafts) by id for the editor. RLS
+// posts_admin_all lets admins read unpublished rows.
+export async function getPostById(id: string): Promise<Post | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("posts").select("*").eq("id", id).maybeSingle();
   return (data as Post) ?? null;
 }
 

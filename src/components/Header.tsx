@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/Logo";
+import Avatar from "@/components/Avatar";
 
 const NAV = [
   { label: "Browse talent", href: "/artists" },
@@ -16,6 +17,7 @@ const NAV = [
 export default function Header() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export default function Header() {
     await supabase.auth.signOut();
     setEmail(null);
     setOpen(false);
+    setMenu(false);
     router.push("/");
     router.refresh();
   }
@@ -56,20 +59,35 @@ export default function Header() {
 
           <div className="hidden md:flex items-center gap-2">
             {email ? (
-              <>
-                <span
-                  title={email}
-                  className="w-8 h-8 rounded-full bg-[var(--blue-soft)] border border-[var(--blue-mid)] flex items-center justify-center text-[12px] font-bold text-[var(--blue-dark)] uppercase"
-                >
-                  {email[0]}
-                </span>
+              <div className="relative">
                 <button
-                  onClick={signOut}
-                  className="text-[13px] font-semibold px-4 py-2 rounded-lg border border-[var(--line)] text-[var(--ink)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all"
+                  onClick={() => setMenu(!menu)}
+                  className="flex items-center gap-1.5 rounded-full pl-1 pr-2 py-1 hover:bg-[var(--bg2)] transition-colors"
+                  aria-label="Account menu"
                 >
-                  Sign out
+                  <Avatar seed={email} size={32} />
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={`text-[var(--ink-faint)] transition-transform ${menu ? "rotate-180" : ""}`}>
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
-              </>
+                {menu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setMenu(false)} />
+                    <div className="absolute right-0 mt-2 w-56 z-50 bg-white border border-[var(--line)] rounded-xl shadow-[0_16px_40px_rgba(16,26,38,0.14)] py-1.5 overflow-hidden">
+                      <p className="px-4 py-2 text-[12px] text-[var(--ink-faint)] truncate border-b border-[var(--line)]">{email}</p>
+                      <Link href="/dashboard" onClick={() => setMenu(false)} className="block px-4 py-2.5 text-[13.5px] font-semibold text-[var(--ink)] hover:bg-[var(--bg2)] transition-colors">
+                        Dashboard
+                      </Link>
+                      <Link href="/pricing" onClick={() => setMenu(false)} className="block px-4 py-2.5 text-[13.5px] font-medium text-[var(--ink-dim)] hover:bg-[var(--bg2)] transition-colors">
+                        Plans & billing
+                      </Link>
+                      <button onClick={signOut} className="block w-full text-left px-4 py-2.5 text-[13.5px] font-medium text-[var(--coral)] hover:bg-[var(--bg2)] transition-colors border-t border-[var(--line)]">
+                        Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <>
                 <Link
@@ -114,12 +132,21 @@ export default function Header() {
           ))}
           <div className="flex gap-2 mt-3">
             {email ? (
-              <button
-                onClick={signOut}
-                className="flex-1 py-2.5 rounded-lg border border-[var(--line)] text-[13.5px] font-semibold text-[var(--ink)] text-center hover:border-[var(--blue)] transition-all"
-              >
-                Sign out
-              </button>
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="flex-1 py-2.5 rounded-lg bg-[var(--blue)] text-white text-[13.5px] font-semibold text-center hover:bg-[var(--blue-dark)] transition-all"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="flex-1 py-2.5 rounded-lg border border-[var(--line)] text-[13.5px] font-semibold text-[var(--ink)] text-center hover:border-[var(--blue)] transition-all"
+                >
+                  Sign out
+                </button>
+              </>
             ) : (
               <>
                 <Link
