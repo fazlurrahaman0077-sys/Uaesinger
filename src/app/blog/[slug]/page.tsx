@@ -72,7 +72,8 @@ export default async function BlogPostPage({
           </h1>
 
           {html ? (
-            <div className="blog-content" dangerouslySetInnerHTML={{ __html: post.body ?? "" }} />
+            // Strip the body's own <h1> — the page already renders one (single-h1 SEO).
+            <div className="blog-content" dangerouslySetInnerHTML={{ __html: (post.body ?? "").replace(/<h1[\s\S]*?<\/h1>/i, "") }} />
           ) : (
             <div className="flex flex-col gap-5">
               {paragraphs.map((para, i) => (
