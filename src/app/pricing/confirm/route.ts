@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { getPaymentIntent } from "@/lib/ziina";
 
 // Return URL from Ziina's hosted checkout. We don't trust the redirect itself —
@@ -32,11 +33,15 @@ export async function GET(req: NextRequest) {
     return to("/pricing?error=verify");
   }
 
+  // Trusted writer: service-role (bypasses RLS) so activation can't be forged by
+  // the client. Falls back to the user session until the key is set.
+  const writer = hasAdmin() ? createAdminClient() : supabase;
+
   if (intent.status === "completed") {
-    await supabase.from("payments").update({ status: "completed" }).eq("id", payment.id);
+    await writer.from("payments").update({ status: "completed" }).eq("id", payment.id);
     // Newest active plan is the source of truth — cancel any previous one.
-    await supabase.from("subscriptions").update({ status: "canceled" }).eq("user_id", user.id).eq("status", "active");
-    await supabase.from("subscriptions").insert({
+    await writer.from("subscriptions").update({ status: "canceled" }).eq("user_id", user.id).eq("status", "active");
+    await writer.from("subscriptions").insert({
       user_id: user.id,
       plan: payment.plan,
       status: "active",
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (intent.status === "failed" || intent.status === "canceled") {
-    await supabase.from("payments").update({ status: "failed" }).eq("id", payment.id);
+    await writer.from("payments").update({ status: "failed" }).eq("id", payment.id);
     return to("/pricing?failed=1");
   }
 
