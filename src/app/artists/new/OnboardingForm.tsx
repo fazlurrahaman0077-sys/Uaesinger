@@ -61,6 +61,8 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     e.preventDefault();
     setError(null);
     if (!f.name.trim() || !f.city || !f.category) return setError("Add your name, category and city to continue.");
+    if (!f.phone.trim() && !f.whatsapp.trim() && !f.email.trim())
+      return setError("Add at least one contact method (phone, WhatsApp or email) so clients can reach you.");
 
     setBusy(true);
     try {
@@ -212,7 +214,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
           )}
         </Section>
 
-        <Section eyebrow="05" title="Private contact" hint="Only shown to clients who subscribe and unlock you.">
+        <Section eyebrow="05" title="Private contact" hint="At least one required · only shown to clients who subscribe and unlock you.">
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Phone"><input value={f.phone} onChange={set("phone")} placeholder="+971 50 000 0000" className={input} /></Field>
             <Field label="WhatsApp"><input value={f.whatsapp} onChange={set("whatsapp")} placeholder="+971 50 000 0000" className={input} /></Field>

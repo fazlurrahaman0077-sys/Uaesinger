@@ -30,10 +30,16 @@ export async function createArtist(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const category = String(formData.get("category") ?? "");
   const city = String(formData.get("city") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const whatsapp = String(formData.get("whatsapp") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
 
-  // Trust-boundary validation.
+  // Trust-boundary validation — basics + at least one contact method.
   if (!name || !city || !CATEGORIES.some((c) => c.slug === category)) {
     redirect("/artists/new?error=missing");
+  }
+  if (!phone && !whatsapp && !email) {
+    redirect("/artists/new?error=contact");
   }
 
   const base = slugify(name) || "artist";
