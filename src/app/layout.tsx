@@ -20,6 +20,7 @@ const hanken = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "Hire Singers, DJs, Bands, MCs, Hosts, Photographers & Entertainers in Dubai & UAE | UAESinger.com",
   description:
     "UAESinger.com connects clients across Dubai, Abu Dhabi, Sharjah and all Emirates with verified singers, DJs, bands, MCs, hosts, photographers and entertainers. Watch real performance videos and book talent for weddings, corporate events, and full-time roles.",

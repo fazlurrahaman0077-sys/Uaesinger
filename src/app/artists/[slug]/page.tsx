@@ -7,6 +7,9 @@ import { CATEGORIES, categoryLabel, artistHero, priceRange } from "@/lib/artists
 import { getAccess, isArtistUnlocked, maskedNumber } from "@/lib/subscription";
 import { getArtistBySlug, getContact } from "@/lib/talent";
 import { listArtistVideos } from "@/lib/videos";
+import { listArtistPhotos } from "@/lib/photos";
+import ShareButton from "@/components/ShareButton";
+import JsonLd from "@/components/JsonLd";
 import { getPlan } from "@/lib/plans";
 import { revealContact, requestBooking } from "./actions";
 
@@ -18,9 +21,18 @@ export async function generateMetadata({
   const { slug } = await params;
   const artist = await getArtistBySlug(slug);
   if (!artist) return { title: "Artist not found | UAESinger" };
+  const label = categoryLabel(artist.category);
+  const title = `${artist.name} — ${artist.tagline || label} in ${artist.city} | UAESinger`;
+  const description =
+    (artist.bio || `Book ${artist.name}, a ${label.toLowerCase()} available in ${artist.city}. See reviews, rates and performance videos on UAESinger.`).slice(0, 160);
+  const url = `/artists/${artist.slug}`;
   return {
-    title: `${artist.name} — ${artist.tagline} in ${artist.city} | UAESinger`,
-    description: (artist.bio || artist.tagline).slice(0, 155),
+    title,
+    description,
+    keywords: [`hire ${label} ${artist.city}`, `${artist.name}`, `book ${label} UAE`, ...artist.genres.map((g) => `${g} ${artist.city}`)],
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: "profile", siteName: "UAESinger" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -44,12 +56,34 @@ export default async function ArtistPage({
   const unlocked = plan ? await isArtistUnlocked(artist.id) : false;
   const contact = unlocked ? await getContact(artist.id) : null;
   const videos = await listArtistVideos(artist.id);
+  const photos = await listArtistPhotos(artist.id);
   const remaining = quota === null ? null : Math.max(0, quota - unlocksUsed);
   const planInfo = getPlan(plan);
   const limitReached = !unlocked && quota !== null && remaining === 0;
 
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const coverAbs = artist.photoPath
+    ? artistHero(artist.category, artist.photoPath)
+    : `${base}${artistHero(artist.category)}`;
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "PerformingGroup",
+    name: artist.name,
+    description: artist.bio || artist.tagline,
+    image: coverAbs,
+    url: `${base}/artists/${artist.slug}`,
+    address: { "@type": "PostalAddress", addressRegion: artist.city, addressCountry: "AE" },
+    ...(artist.reviews > 0 && {
+      aggregateRating: { "@type": "AggregateRating", ratingValue: artist.rating, reviewCount: artist.reviews },
+    }),
+    ...(artist.priceMin && {
+      makesOffer: { "@type": "Offer", priceCurrency: "AED", price: artist.priceMin, availability: "https://schema.org/InStock" },
+    }),
+  };
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       <Header />
       <main className="bg-[var(--bg2)] min-h-screen">
         <div className="max-w-[1180px] mx-auto px-5 py-8">
@@ -105,6 +139,18 @@ export default async function ArtistPage({
                   <TagRow title="Styles" items={artist.genres} />
                 </div>
 
+                {photos.length > 0 && (
+                  <div className="mt-8">
+                    <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">Gallery</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {photos.map((p) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={p.id} src={p.url} alt={`${artist.name}`} loading="lazy" className="w-full aspect-square object-cover rounded-xl border border-[var(--line)]" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {videos.length > 0 && (
                   <div className="mt-8">
                     <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">Watch {artist.name.split(" ")[0]}</h2>
@@ -128,9 +174,15 @@ export default async function ArtistPage({
                 <span className="text-[13px] text-[var(--gold)] font-bold">★ {artist.rating}</span>
               </div>
               <p className="text-[13.5px] text-[var(--ink-dim)] mb-1">{artist.tagline}</p>
-              <p className="text-[12.5px] text-[var(--ink-faint)] mb-4">
+              <p className="text-[12.5px] text-[var(--ink-faint)] mb-3">
                 {categoryLabel(artist.category)} · {artist.city}
               </p>
+
+              <ShareButton
+                path={`/artists/${artist.slug}`}
+                title={`${artist.name} on UAESinger`}
+                className="w-full mb-4 py-2 rounded-lg border border-[var(--line)] text-[13px] font-semibold text-[var(--ink)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all"
+              />
 
               <div className="flex items-center gap-2 text-[12.5px] font-semibold text-[var(--blue-dark)] bg-[var(--blue-soft)] border border-[var(--blue-mid)] rounded-lg px-3 py-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-500" />

@@ -13,6 +13,7 @@ import { publicVideoUrl } from "@/lib/videos";
 import { updateBookingStatus, updateListing } from "./actions";
 import { removeVideo } from "./video-actions";
 import VideoUploader from "@/components/VideoUploader";
+import ShareButton from "@/components/ShareButton";
 
 export const metadata: Metadata = { title: "Dashboard | UAESinger" };
 
@@ -225,6 +226,7 @@ async function CreatorView({ userId }: { userId: string }) {
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${a.is_published ? "bg-green-50 text-green-700" : "bg-[var(--bg3)] text-[var(--ink-faint)]"}`}>
                   {a.is_published ? "Live" : "Hidden"}
                 </span>
+                <ShareButton path={`/artists/${a.slug}`} title={`${a.name} on UAESinger`} className="text-[12px] font-semibold text-[var(--blue-dark)] hover:underline" />
                 <Link href={`/artists/${a.slug}`} className="text-[12px] font-semibold text-[var(--blue-dark)] hover:underline">View public page →</Link>
               </div>
             </div>

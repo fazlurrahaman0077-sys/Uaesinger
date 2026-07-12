@@ -86,6 +86,18 @@ export async function createArtist(formData: FormData) {
     } catch {
       // Ignore malformed video payloads — the listing is still created.
     }
+
+    // Gallery photos (cover is stored on the artist row as photo_path).
+    try {
+      const gallery = JSON.parse(String(formData.get("photos") ?? "[]")) as string[];
+      if (Array.isArray(gallery) && gallery.length) {
+        await supabase.from("artist_photos").insert(
+          gallery.filter(Boolean).map((path) => ({ artist_id: created.id, owner_id: user.id, storage_path: path })),
+        );
+      }
+    } catch {
+      // Ignore malformed photo payloads.
+    }
   }
 
   // Mark the account as an artist.

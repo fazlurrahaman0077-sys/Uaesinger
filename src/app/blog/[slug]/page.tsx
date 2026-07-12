@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getPost, bodyParagraphs, formatDate } from "@/lib/blog";
+import { getPost, bodyParagraphs, formatDate, isHtml } from "@/lib/blog";
+import JsonLd from "@/components/JsonLd";
 
 export async function generateMetadata({
   params,
@@ -13,7 +14,15 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Post not found | UAESinger" };
-  return { title: `${post.title} | UAESinger`, description: post.excerpt ?? undefined };
+  const title = `${post.title} | UAESinger`;
+  const url = `/blog/${post.slug}`;
+  return {
+    title,
+    description: post.excerpt ?? undefined,
+    alternates: { canonical: url },
+    openGraph: { type: "article", title, description: post.excerpt ?? undefined, url, siteName: "UAESinger" },
+    twitter: { card: "summary_large_image", title, description: post.excerpt ?? undefined },
+  };
 }
 
 export default async function BlogPostPage({
@@ -25,10 +34,24 @@ export default async function BlogPostPage({
   const post = await getPost(slug);
   if (!post) notFound();
 
-  const paragraphs = bodyParagraphs(post.body);
+  const html = isHtml(post.body);
+  const paragraphs = html ? [] : bodyParagraphs(post.body);
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt ?? undefined,
+    datePublished: post.created_at,
+    dateModified: post.created_at,
+    author: { "@type": "Organization", name: "UAESinger" },
+    publisher: { "@type": "Organization", name: "UAESinger", url: base },
+    mainEntityOfPage: `${base}/blog/${post.slug}`,
+  };
 
   return (
     <>
+      <JsonLd data={jsonLd} />
       <Header />
       <main className="bg-white min-h-screen">
         <article className="max-w-[720px] mx-auto px-5 pt-12 pb-24">
@@ -48,13 +71,17 @@ export default async function BlogPostPage({
             {post.title}
           </h1>
 
-          <div className="flex flex-col gap-5">
-            {paragraphs.map((para, i) => (
-              <p key={i} className="text-[16px] text-[var(--ink-dim)] leading-relaxed">
-                {para}
-              </p>
-            ))}
-          </div>
+          {html ? (
+            <div className="blog-content" dangerouslySetInnerHTML={{ __html: post.body ?? "" }} />
+          ) : (
+            <div className="flex flex-col gap-5">
+              {paragraphs.map((para, i) => (
+                <p key={i} className="text-[16px] text-[var(--ink-dim)] leading-relaxed">
+                  {para}
+                </p>
+              ))}
+            </div>
+          )}
 
           <div className="mt-12 pt-8 border-t border-[var(--line)] bg-[var(--blue-soft)] -mx-5 px-5 py-8 sm:rounded-2xl sm:mx-0 sm:px-8">
             <h3 className="font-display text-[20px] font-semibold text-[var(--ink)] mb-2">Ready to book talent?</h3>

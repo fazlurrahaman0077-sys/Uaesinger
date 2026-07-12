@@ -29,6 +29,21 @@
   --stage-2: #2A1838;     /* raised stage surface */
 }
 
+/* Imported blog HTML — readable long-form typography. */
+.blog-content { color: var(--ink-dim); font-size: 16px; line-height: 1.75; }
+.blog-content h1, .blog-content h2, .blog-content h3 { font-family: var(--font-display), Georgia, serif; color: var(--ink); font-weight: 600; line-height: 1.25; margin: 1.6em 0 0.5em; }
+.blog-content h1 { font-size: 30px; }
+.blog-content h2 { font-size: 24px; }
+.blog-content h3 { font-size: 19px; }
+.blog-content p { margin: 0 0 1.1em; }
+.blog-content ul, .blog-content ol { margin: 0 0 1.1em; padding-left: 1.3em; }
+.blog-content li { margin: 0.3em 0; }
+.blog-content a { color: var(--blue-dark); text-decoration: underline; }
+.blog-content strong { color: var(--ink); font-weight: 600; }
+.blog-content img { display: none; } /* imported posts are image-free */
+.blog-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 14px; }
+.blog-content th, .blog-content td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+
 html { scroll-behavior: smooth; }
 
 body {

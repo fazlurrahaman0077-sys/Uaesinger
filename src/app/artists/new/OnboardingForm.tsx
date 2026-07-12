@@ -28,7 +28,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setF((p) => ({ ...p, [k]: e.target.value }));
 
-  const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
+  const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
   const [videos, setVideos] = useState<Vid[]>([]);
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState("");
@@ -36,10 +36,12 @@ export default function OnboardingForm({ userId }: { userId: string }) {
 
   const emoji = CATEGORIES.find((c) => c.slug === f.category)?.emoji ?? "🎤";
   const price = priceRange(Number(f.price_min) || null, Number(f.price_max) || null);
+  const cover = photos[0] ?? null;
 
-  function pickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) setPhoto({ file, preview: URL.createObjectURL(file) });
+  function pickPhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []).filter((x) => x.type.startsWith("image/"));
+    setPhotos((p) => [...p, ...files.map((file) => ({ file, preview: URL.createObjectURL(file) }))]);
+    e.target.value = "";
   }
   function pickVideos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).filter((x) => x.type.startsWith("video/"));
@@ -55,14 +57,17 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     setBusy(true);
     try {
       const supabase = createClient();
-      let photoPath = "";
-      if (photo) {
-        setStep("Uploading photo…");
-        const ext = photo.file.name.split(".").pop()?.toLowerCase() || "jpg";
-        photoPath = `${userId}/${crypto.randomUUID()}.${ext}`;
-        const { error: pErr } = await supabase.storage.from("creator-photos").upload(photoPath, photo.file, { contentType: photo.file.type });
+      const photoPaths: string[] = [];
+      for (let i = 0; i < photos.length; i++) {
+        setStep(photos.length > 1 ? `Uploading photo ${i + 1} of ${photos.length}…` : "Uploading photo…");
+        const ph = photos[i];
+        const ext = ph.file.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+        const { error: pErr } = await supabase.storage.from("creator-photos").upload(path, ph.file, { contentType: ph.file.type });
         if (pErr) throw pErr;
+        photoPaths.push(path);
       }
+      const photoPath = photoPaths[0] ?? ""; // first = cover
 
       const vidMeta: { path: string; title: string }[] = [];
       for (let i = 0; i < videos.length; i++) {
@@ -79,6 +84,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
       const fd = new FormData();
       Object.entries(f).forEach(([k, v]) => fd.set(k, v));
       fd.set("photo_path", photoPath);
+      fd.set("photos", JSON.stringify(photoPaths.slice(1))); // gallery (cover excluded)
       fd.set("videos", JSON.stringify(vidMeta));
       await createArtist(fd); // redirects to the new profile
     } catch (err) {
@@ -92,21 +98,22 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12 items-start">
       {/* ---- Form ---- */}
       <form onSubmit={onSubmit} className="order-2 lg:order-1 flex flex-col gap-6">
-        <Section eyebrow="01" title="Your photo" hint="A great performance shot. Skip it and we'll use a stage image for your category.">
-          <label className="flex items-center gap-4 cursor-pointer">
-            <span className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--blue-soft)] flex items-center justify-center flex-shrink-0">
-              {photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photo.preview} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[22px]">📷</span>
-              )}
-            </span>
-            <span className="text-[13px] font-semibold text-[var(--blue-dark)] underline">
-              {photo ? "Change photo" : "Upload a photo"}
-            </span>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={pickPhoto} className="hidden" />
-          </label>
+        <Section eyebrow="01" title="Your photos" hint="Add a few great shots — the first is your cover. Skip it and we'll use a stage image for your category.">
+          <div className="flex flex-wrap gap-3">
+            {photos.map((ph, i) => (
+              <span key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[var(--line)] group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={ph.preview} alt="" className="w-full h-full object-cover" />
+                {i === 0 && <span className="absolute bottom-0 inset-x-0 text-[9px] font-bold text-center text-white bg-[var(--blue)]/85 py-0.5">COVER</span>}
+                <button type="button" onClick={() => setPhotos((p) => p.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none">✕</button>
+              </span>
+            ))}
+            <label className="w-20 h-20 rounded-2xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-[var(--blue)] transition-colors">
+              <span className="text-[20px]">📷</span>
+              <span className="text-[10px] font-semibold text-[var(--blue-dark)]">Add</span>
+              <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={pickPhotos} className="hidden" />
+            </label>
+          </div>
         </Section>
 
         <Section eyebrow="02" title="The basics">
@@ -207,9 +214,9 @@ export default function OnboardingForm({ userId }: { userId: string }) {
         <p className="hidden lg:block text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-3">Live preview</p>
         <div className="rounded-2xl overflow-hidden border border-[var(--line)] bg-white shadow-[0_16px_50px_rgba(16,26,38,0.10)]">
           <div className="relative aspect-[4/5] overflow-hidden bg-[radial-gradient(circle_at_50%_0%,var(--blue-mid),var(--blue-soft)_60%)] flex items-center justify-center">
-            {photo ? (
+            {cover ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo.preview} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={cover.preview} alt="" className="absolute inset-0 w-full h-full object-cover" />
             ) : (
               <span className="font-display text-[64px] font-bold text-[var(--blue-deep)]/40">{initials(f.name || "Your Name")}</span>
             )}

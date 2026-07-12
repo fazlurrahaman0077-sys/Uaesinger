@@ -36,6 +36,11 @@ export async function getPostById(id: string): Promise<Post | null> {
   return (data as Post) ?? null;
 }
 
+// Imported posts store rich HTML; hand-written posts store blank-line paragraphs.
+export function isHtml(body: string | null): boolean {
+  return /<(p|h[1-6]|ul|ol|div|section|article)\b/i.test(body ?? "");
+}
+
 export function bodyParagraphs(body: string | null): string[] {
   return (body ?? "")
     .split(/\n\s*\n/)
