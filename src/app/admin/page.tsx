@@ -22,6 +22,7 @@ export default async function AdminPage() {
     { data: weekVisits },
     { data: payments },
     { data: completedPay },
+    { data: messages },
   ] = await Promise.all([
     supabase.from("artists").select("id, slug, name, category_slug, city, is_published, created_at").order("created_at", { ascending: false }),
     supabase.from("posts").select("id, slug, title, category, published, created_at").order("created_at", { ascending: false }),
@@ -32,6 +33,7 @@ export default async function AdminPage() {
     supabase.from("visits").select("visitor_id").gte("day", weekAgo),
     supabase.from("payments").select("id, user_email, plan, amount_aed, status, created_at").order("created_at", { ascending: false }).limit(50),
     supabase.from("payments").select("amount_aed").eq("status", "completed"),
+    supabase.from("contact_messages").select("id, name, email, subject, message, created_at").order("created_at", { ascending: false }).limit(50),
   ]);
 
   // Unique visitors over the last 7 days (distinct across the daily rows).
@@ -46,7 +48,7 @@ export default async function AdminPage() {
     { label: "Visitors 7d", value: weekUnique },
     { label: "Artists live", value: artists?.filter((a) => a.is_published).length ?? 0 },
     { label: "Revenue AED", value: revenue.toLocaleString() },
-    { label: "Posts", value: posts?.length ?? 0 },
+    { label: "Support msgs", value: messages?.length ?? 0 },
   ];
 
   return (
@@ -70,6 +72,37 @@ export default async function AdminPage() {
               </div>
             ))}
           </div>
+
+          {/* Support messages — new-message notification */}
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="font-display text-[20px] font-semibold text-[var(--ink)]">Support messages</h2>
+              {(messages ?? []).length > 0 && (
+                <span className="text-[11px] font-bold text-white bg-[var(--coral)] px-2.5 py-0.5 rounded-full">
+                  {messages!.length} new
+                </span>
+              )}
+            </div>
+            <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden">
+              {(messages ?? []).length === 0 ? (
+                <p className="px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">No messages yet.</p>
+              ) : (
+                <div className="divide-y divide-[var(--line)]">
+                  {messages!.map((m) => (
+                    <div key={m.id} className="px-5 py-3.5 text-[13px]">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="font-semibold text-[var(--ink)]">{m.name}</span>
+                        <a href={`mailto:${m.email}`} className="text-[12px] text-[var(--blue-dark)] hover:underline">{m.email}</a>
+                        {m.subject && <span className="text-[11px] text-[var(--ink-faint)]">· {m.subject}</span>}
+                        <span className="text-[11px] text-[var(--ink-faint)] ml-auto">{new Date(m.created_at).toLocaleString()}</span>
+                      </div>
+                      <p className="text-[13px] text-[var(--ink-dim)]">{m.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
 
           {/* Payments */}
           <section className="mb-12">

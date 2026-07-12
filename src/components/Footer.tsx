@@ -92,7 +92,7 @@ export default function Footer() {
           <span className="flex gap-4">
             <a href="#" className="hover:text-[var(--ink-dim)] transition-colors">Privacy</a>
             <a href="#" className="hover:text-[var(--ink-dim)] transition-colors">Terms</a>
-            <a href="#" className="hover:text-[var(--ink-dim)] transition-colors">Contact</a>
+            <Link href="/contact" className="hover:text-[var(--ink-dim)] transition-colors">Contact</Link>
           </span>
         </div>
       </div>
