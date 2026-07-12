@@ -14,11 +14,13 @@ export type Post = {
 
 export async function listPosts(): Promise<Post[]> {
   const supabase = await createClient();
+  // Index only needs metadata — never fetch the (large) body column here.
   const { data } = await supabase
     .from("posts")
-    .select("*")
+    .select("id, slug, title, excerpt, category, read_mins, published, created_at")
     .eq("published", true)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(60);
   return (data as Post[]) ?? [];
 }
 
