@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Artist } from "@/lib/artists";
 
 // DB row -> display shape used by the components.
@@ -60,7 +61,7 @@ function toArtist(r: Row): Artist & { id: string } {
 export type ArtistFilter = { category?: string; subcategory?: string; city?: string; gender?: string; tag?: string; q?: string };
 
 export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & { id: string })[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let query = supabase.from("artists").select(COLS).eq("is_published", true);
   if (filter.category && filter.category !== "all") query = query.eq("category_slug", filter.category);
   if (filter.subcategory) query = query.eq("subcategory", filter.subcategory);
@@ -77,7 +78,7 @@ export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & 
 }
 
 export async function getArtistBySlug(slug: string): Promise<(Artist & { id: string }) | null> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase.from("artists").select(COLS).eq("slug", slug).maybeSingle();
   if (error || !data) return null;
   return toArtist(data as Row);

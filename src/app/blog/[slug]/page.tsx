@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import { getPost, bodyParagraphs, formatDate, isHtml } from "@/lib/blog";
 import JsonLd from "@/components/JsonLd";
 
+export const revalidate = 3600; // ISR — posts rarely change; cache for an hour.
+
 export async function generateMetadata({
   params,
 }: {

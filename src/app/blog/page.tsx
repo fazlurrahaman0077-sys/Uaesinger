@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { listPosts, formatDate } from "@/lib/blog";
 
+export const revalidate = 300; // ISR — cached blog index.
+
 export const metadata: Metadata = {
   title: "Blog — hiring guides & event tips | UAESinger",
   description:

@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { publicPhotoUrl } from "@/lib/artists";
 
 export type Photo = { id: string; storagePath: string; url: string };
 
 export async function listArtistPhotos(artistId: string): Promise<Photo[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("artist_photos")
     .select("id, storage_path")

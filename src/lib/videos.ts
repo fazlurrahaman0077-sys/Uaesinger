@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 // Videos live on OUR infrastructure only — Cloudinary (our account) or Supabase
 // Storage. We never store the creator's own external links (YouTube/Vimeo/IG),
@@ -17,7 +17,7 @@ export function publicVideoUrl(path: string): string {
 type Row = { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null };
 
 export async function listArtistVideos(artistId: string): Promise<Video[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("artist_videos")
     .select("id, artist_id, storage_path, url, title")

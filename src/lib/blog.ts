@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export type Post = {
   id: string;
@@ -13,7 +14,7 @@ export type Post = {
 };
 
 export async function listPosts(): Promise<Post[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   // Index only needs metadata — never fetch the (large) body column here.
   const { data } = await supabase
     .from("posts")
@@ -21,13 +22,13 @@ export async function listPosts(): Promise<Post[]> {
     .eq("published", true)
     .order("created_at", { ascending: false })
     .limit(60);
-  return (data as Post[]) ?? [];
+  return (data as unknown as Post[]) ?? [];
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase.from("posts").select("*").eq("slug", slug).maybeSingle();
-  return (data as Post) ?? null;
+  return (data as unknown as Post) ?? null;
 }
 
 // Admin-only: fetch any post (incl. drafts) by id for the editor. RLS

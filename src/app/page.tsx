@@ -11,6 +11,9 @@ import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 
+// ISR — cache the homepage; regenerate at most every 5 min. Served in ~50ms.
+export const revalidate = 300;
+
 export default function Home() {
   return (
     <>
