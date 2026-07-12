@@ -15,10 +15,7 @@ export default function Hero() {
             "radial-gradient(120% 80% at 22% -10%, rgba(245,166,35,0.30), transparent 55%), radial-gradient(90% 70% at 90% 0%, rgba(90,46,134,0.55), transparent 60%)",
         }}
       />
-      {/* Floor gradient into the page */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#FDFCFE]" />
-
-      <div className="relative max-w-[1180px] mx-auto px-5 pt-16 sm:pt-24 pb-24 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-14 items-center">
+      <div className="relative max-w-[1180px] mx-auto px-5 pt-16 sm:pt-24 pb-20 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-14 items-center">
         {/* Copy */}
         <div className="bloom">
           <div className="flex items-center gap-2.5 mb-6">

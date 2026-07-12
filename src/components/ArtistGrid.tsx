@@ -11,10 +11,10 @@ export default async function ArtistGrid() {
   return (
     <div id="talent">
       {/* Category tabs — link into the real directory */}
-      <div className="py-12 px-5 flex flex-wrap gap-2 justify-center">
+      <div className="max-w-[980px] mx-auto py-12 px-5 flex flex-wrap gap-2 justify-center">
         <Link
           href="/artists"
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[13px] font-medium border border-[var(--blue)] bg-[var(--blue)] text-white shadow-[0_4px_12px_rgba(43,127,214,0.25)] transition-all"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[13px] font-medium border border-[var(--blue)] bg-[var(--blue)] text-white shadow-[0_4px_12px_rgba(90,46,134,0.25)] transition-all"
         >
           ✦ All talent
         </Link>
