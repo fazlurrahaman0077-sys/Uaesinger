@@ -184,9 +184,9 @@ async function CreatorView({ userId }: { userId: string }) {
   const contactBy = new Map((contacts ?? []).map((c) => [c.artist_id, c]));
 
   const { data: videos } = ids.length
-    ? await supabase.from("artist_videos").select("id, artist_id, storage_path, title").in("artist_id", ids).order("created_at")
+    ? await supabase.from("artist_videos").select("id, artist_id, storage_path, url, title").in("artist_id", ids).order("created_at")
     : { data: [] };
-  const videosBy = new Map<string, { id: string; artist_id: string; storage_path: string; title: string | null }[]>();
+  const videosBy = new Map<string, { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null }[]>();
   for (const v of videos ?? []) {
     const arr = videosBy.get(v.artist_id) ?? [];
     arr.push(v);
@@ -321,17 +321,17 @@ async function CreatorView({ userId }: { userId: string }) {
                 Videos {vids.length > 0 && <span className="text-[var(--blue-dark)]">({vids.length})</span>}
               </p>
               <div className="grid sm:grid-cols-[1fr_1fr] gap-4 items-start">
-                <VideoUploader artistId={a.id} userId={userId} />
+                <VideoUploader artistId={a.id} />
                 {vids.length > 0 && (
                   <div className="grid grid-cols-2 gap-3">
                     {vids.map((v) => (
                       <div key={v.id} className="rounded-xl overflow-hidden border border-[var(--line)] bg-black">
-                        <video src={publicVideoUrl(v.storage_path)} controls preload="metadata" className="w-full aspect-video object-cover bg-black" />
+                        <video src={v.url || (v.storage_path ? publicVideoUrl(v.storage_path) : "")} controls preload="metadata" className="w-full aspect-video object-cover bg-black" />
                         <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-white">
                           <span className="text-[11.5px] text-[var(--ink-dim)] truncate">{v.title || "Untitled"}</span>
                           <form action={removeVideo}>
                             <input type="hidden" name="id" value={v.id} />
-                            <input type="hidden" name="storagePath" value={v.storage_path} />
+                            <input type="hidden" name="storagePath" value={v.storage_path ?? ""} />
                             <button className="text-[11px] font-semibold text-[var(--coral)] hover:underline">Delete</button>
                           </form>
                         </div>

@@ -158,7 +158,7 @@ export default async function ArtistPage({
                     <div className="grid sm:grid-cols-2 gap-4">
                       {videos.map((v) => (
                         <figure key={v.id} className="rounded-xl overflow-hidden border border-[var(--line)] bg-black">
-                          <video src={v.url} controls preload="metadata" playsInline className="w-full aspect-video bg-black" />
+                          <video src={v.src} controls preload="metadata" playsInline className="w-full aspect-video bg-black" />
                           {v.title && <figcaption className="text-[12px] text-[var(--ink-dim)] px-3 py-2 bg-white">{v.title}</figcaption>}
                         </figure>
                       ))}

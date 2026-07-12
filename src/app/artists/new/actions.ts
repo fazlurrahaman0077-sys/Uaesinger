@@ -85,12 +85,12 @@ export async function createArtist(formData: FormData) {
 
     // Videos were uploaded to storage client-side; attach their metadata rows.
     try {
-      const vids = JSON.parse(String(formData.get("videos") ?? "[]")) as { path: string; title?: string }[];
+      const vids = JSON.parse(String(formData.get("videos") ?? "[]")) as { url: string; title?: string }[];
       if (Array.isArray(vids) && vids.length) {
         await supabase.from("artist_videos").insert(
           vids
-            .filter((v) => v?.path)
-            .map((v) => ({ artist_id: created.id, owner_id: user.id, storage_path: v.path, title: v.title || null })),
+            .filter((v) => v?.url && v.url.includes("res.cloudinary.com"))
+            .map((v) => ({ artist_id: created.id, owner_id: user.id, url: v.url, title: v.title || null })),
         );
       }
     } catch {

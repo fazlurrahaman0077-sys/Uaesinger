@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CATEGORIES, SUBCATEGORIES, EMIRATES, GENDERS, NATIONALITIES, categoryLabel, priceRange, initials } from "@/lib/artists";
 import Select from "@/components/Select";
+import { uploadVideoToCloudinary } from "@/lib/cloudinary";
 import { createArtist } from "./actions";
 
 const AVAILABILITY = ["Available now", "Booking 2 weeks out", "Limited dates"];
@@ -79,15 +80,12 @@ export default function OnboardingForm({ userId }: { userId: string }) {
       }
       const photoPath = photoPaths[0] ?? ""; // first = cover
 
-      const vidMeta: { path: string; title: string }[] = [];
+      const vidMeta: { url: string; title: string }[] = [];
       for (let i = 0; i < videos.length; i++) {
         setStep(`Uploading video ${i + 1} of ${videos.length}…`);
         const v = videos[i];
-        const ext = v.file.name.split(".").pop()?.toLowerCase() || "mp4";
-        const path = `${userId}/onboarding/${crypto.randomUUID()}.${ext}`;
-        const { error: vErr } = await supabase.storage.from("creator-videos").upload(path, v.file, { contentType: v.file.type });
-        if (vErr) throw vErr;
-        vidMeta.push({ path, title: v.title });
+        const url = await uploadVideoToCloudinary(v.file);
+        vidMeta.push({ url, title: v.title });
       }
 
       setStep("Publishing your profile…");

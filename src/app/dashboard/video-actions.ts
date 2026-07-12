@@ -14,14 +14,15 @@ export async function addVideo(formData: FormData) {
   if (!user) redirect("/signin?next=/dashboard");
 
   const artistId = String(formData.get("artistId") ?? "");
-  const storagePath = String(formData.get("storagePath") ?? "").trim();
+  const url = String(formData.get("url") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim() || null;
-  if (!artistId || !storagePath) redirect("/dashboard");
+  // Only accept our own Cloudinary CDN urls (never a creator's external link).
+  if (!artistId || !url || !url.includes("res.cloudinary.com")) redirect("/dashboard");
 
   await supabase.from("artist_videos").insert({
     artist_id: artistId,
     owner_id: user.id,
-    storage_path: storagePath,
+    url,
     title,
   });
 
