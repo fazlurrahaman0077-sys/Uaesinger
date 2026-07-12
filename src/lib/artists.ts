@@ -24,6 +24,7 @@ export const CATEGORIES: Category[] = [
   { slug: "wedding-performers", label: "Wedding Performers", emoji: "💐", blurb: "Bridal entry, henna artists, wedding MCs and packages." },
   { slug: "entertainers", label: "Entertainers", emoji: "🎪", blurb: "Stilt walkers, mascots, mime and street performers." },
   { slug: "kids", label: "Kids Entertainers", emoji: "🧒", blurb: "Clowns, face painters, magic and puppet shows." },
+  { slug: "lifestyle", label: "Lifestyle Companion", emoji: "🥂", blurb: "Event companions, social hosts & hostesses and dinner companions." },
 ];
 
 // Subcategories per main category. Used for the onboarding select and browse filters.
@@ -40,12 +41,14 @@ export const SUBCATEGORIES: Record<string, string[]> = {
   "wedding-performers": ["Wedding Singers", "Wedding DJs", "Wedding Bands", "Bridal Entry Performers", "Dance Performers", "Arabic Wedding Performers", "Indian Wedding Performers", "Pakistani Wedding Performers", "Traditional Wedding Artists", "Henna Artists", "Wedding MCs"],
   entertainers: ["Stilt Walkers", "Mascot Performers", "Balloon Artists", "Juggling Artists", "Puppeteers", "Street Performers", "Mime Artists", "Living Statues", "Bubble Artists"],
   kids: ["Clowns", "Face Painters", "Balloon Artists", "Magic Shows", "Puppet Shows", "Character Performers", "Mascot Shows", "Kids DJs", "Storytellers", "Science Shows"],
+  lifestyle: ["Event Companions", "Social Companions", "Companion Services", "Hosts & Hostesses", "Dinner Companions", "Personal Assistants", "Tour Companions"],
 };
 
 // New categories have no bespoke stock imagery yet — reuse the closest set.
 const IMAGE_ALIAS: Record<string, string> = {
   musicians: "singers", comedians: "mcs-hosts", magicians: "entertainers",
   videographers: "photographers", "wedding-performers": "singers", kids: "entertainers",
+  lifestyle: "mcs-hosts",
 };
 
 // The seven Emirates — used for the onboarding city select and footer links.
