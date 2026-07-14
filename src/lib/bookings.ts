@@ -15,6 +15,7 @@ export type Enquiry = {
   createdAt: string;
   hirerName: string | null;
   hirerPhone: string | null;
+  sharedCard: { phone?: string | null; whatsapp?: string | null; email?: string | null } | null;
 };
 
 type Row = {
@@ -26,11 +27,12 @@ type Row = {
   created_at: string;
   hirer_name: string | null;
   hirer_phone: string | null;
+  shared_card: { phone?: string | null; whatsapp?: string | null; email?: string | null } | null;
   artists: { name: string; slug: string } | null;
 };
 
 const COLS =
-  "id, artist_id, event_date, message, status, created_at, hirer_name, hirer_phone, artists ( name, slug )";
+  "id, artist_id, event_date, message, status, created_at, hirer_name, hirer_phone, shared_card, artists ( name, slug )";
 
 function toEnquiry(r: Row): Enquiry {
   return {
@@ -44,6 +46,7 @@ function toEnquiry(r: Row): Enquiry {
     createdAt: r.created_at,
     hirerName: r.hirer_name,
     hirerPhone: r.hirer_phone,
+    sharedCard: r.shared_card,
   };
 }
 

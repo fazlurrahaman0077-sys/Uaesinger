@@ -34,6 +34,31 @@ export async function updateBookingStatus(formData: FormData) {
   redirect("/dashboard");
 }
 
+// Creator: share their contact card with a hirer who enquired. Runs as the
+// creator, so we can read our own artist_contacts and snapshot it onto the
+// booking (RLS: bookings_update_owner). The hirer then reads it off their own
+// booking row — no phone is ever exposed publicly.
+export async function shareCard(formData: FormData) {
+  const { supabase } = await requireUser();
+  const id = String(formData.get("id") ?? "");
+  const artistId = String(formData.get("artistId") ?? "");
+  if (!id || !artistId) redirect("/dashboard");
+
+  const { data: c } = await supabase
+    .from("artist_contacts")
+    .select("phone, whatsapp, email")
+    .eq("artist_id", artistId)
+    .maybeSingle();
+
+  await supabase
+    .from("bookings")
+    .update({ shared_card: c ?? {}, status: "contacted" })
+    .eq("id", id);
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
+}
+
 // Creator: delete a listing they own. RLS (artists_owner_all) enforces ownership;
 // artist_contacts / videos / photos / bookings cascade on delete.
 export async function deleteListing(formData: FormData) {

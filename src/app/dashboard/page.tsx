@@ -10,7 +10,7 @@ import { getPlan } from "@/lib/plans";
 import { categoryLabel, priceRange } from "@/lib/artists";
 import { listMyEnquiries, listIncomingEnquiries, BOOKING_STATUSES, type Enquiry } from "@/lib/bookings";
 import { publicVideoUrl } from "@/lib/videos";
-import { updateBookingStatus, updateListing, deleteListing } from "./actions";
+import { updateBookingStatus, updateListing, deleteListing, shareCard } from "./actions";
 import { removeVideo } from "./video-actions";
 import VideoUploader from "@/components/VideoUploader";
 import ShareButton from "@/components/ShareButton";
@@ -148,14 +148,24 @@ async function HirerView({ userId }: { userId: string }) {
         ) : (
           <div className="bg-white border border-[var(--line)] rounded-2xl divide-y divide-[var(--line)]">
             {enquiries.map((e) => (
-              <div key={e.id} className="flex items-center gap-3 px-5 py-3.5 text-[13px]">
-                <div className="flex-1 min-w-0">
-                  <Link href={`/artists/${e.artistSlug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">{e.artistName}</Link>
-                  <p className="text-[12px] text-[var(--ink-faint)] truncate">
-                    {e.eventDate ? `${e.eventDate} · ` : ""}{e.message || "No message"}
-                  </p>
+              <div key={e.id} className="px-5 py-3.5 text-[13px]">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/artists/${e.artistSlug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">{e.artistName}</Link>
+                    <p className="text-[12px] text-[var(--ink-faint)] truncate">
+                      {e.eventDate ? `${e.eventDate} · ` : ""}{e.message || "No message"}
+                    </p>
+                  </div>
+                  <StatusBadge status={e.status} />
                 </div>
-                <StatusBadge status={e.status} />
+                {e.sharedCard && (e.sharedCard.phone || e.sharedCard.whatsapp || e.sharedCard.email) && (
+                  <div className="mt-2 pt-2 border-t border-[var(--line)] flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-green-700 w-full">✓ {e.artistName.split(" ")[0]} shared their card</span>
+                    {e.sharedCard.phone && <a href={`tel:${e.sharedCard.phone.replace(/\s/g, "")}`} className="font-semibold text-[var(--blue-dark)] hover:underline">{e.sharedCard.phone}</a>}
+                    {e.sharedCard.whatsapp && <a href={`https://wa.me/${e.sharedCard.whatsapp.replace(/[^\d]/g, "")}`} className="font-semibold text-[var(--blue-dark)] hover:underline">WhatsApp</a>}
+                    {e.sharedCard.email && <a href={`mailto:${e.sharedCard.email}`} className="font-semibold text-[var(--blue-dark)] hover:underline">{e.sharedCard.email}</a>}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -248,7 +258,7 @@ async function CreatorView({ userId }: { userId: string }) {
                   <Field name="price_max" label="Price to (AED)" type="number" defaultValue={a.price_max ?? ""} />
                 </div>
                 <div className="border-t border-[var(--line)] pt-4 flex flex-col gap-4">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)]">Private contact — shown only to subscribers who unlock you</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)]">Private contact — never public; shared only when you tap “Send my card” on an enquiry</p>
                   <div className="grid grid-cols-2 gap-3">
                     <Field name="phone" label="Phone" defaultValue={c?.phone ?? ""} />
                     <Field name="whatsapp" label="WhatsApp" defaultValue={c?.whatsapp ?? ""} />
@@ -281,6 +291,11 @@ async function CreatorView({ userId }: { userId: string }) {
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-3">
                   Enquiries {inbox.length > 0 && <span className="text-[var(--blue-dark)]">({inbox.length})</span>}
+                  {inbox.filter((e) => e.status === "new").length > 0 && (
+                    <span className="ml-1.5 text-[10px] font-bold text-white bg-[var(--coral)] px-1.5 py-0.5 rounded-full normal-case tracking-normal">
+                      {inbox.filter((e) => e.status === "new").length} new
+                    </span>
+                  )}
                 </p>
                 {inbox.length === 0 ? (
                   <Empty>No enquiries yet. They&apos;ll appear here when clients reach out.</Empty>
@@ -308,6 +323,17 @@ async function CreatorView({ userId }: { userId: string }) {
                             Update
                           </button>
                         </form>
+                        {e.sharedCard ? (
+                          <p className="mt-2 text-[12px] font-semibold text-green-700">✓ Your card was shared with {e.hirerName || "this client"}</p>
+                        ) : (
+                          <form action={shareCard} className="mt-2">
+                            <input type="hidden" name="id" value={e.id} />
+                            <input type="hidden" name="artistId" value={e.artistId} />
+                            <button type="submit" className="w-full px-3.5 py-1.5 rounded-lg border border-[var(--blue)] text-[var(--blue-dark)] text-[12.5px] font-semibold hover:bg-[var(--blue-soft)] transition-all">
+                              Send my card
+                            </button>
+                          </form>
+                        )}
                       </div>
                     ))}
                   </div>

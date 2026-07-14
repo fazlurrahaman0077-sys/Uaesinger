@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getPost, bodyParagraphs, formatDate, isHtml } from "@/lib/blog";
 import JsonLd from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 3600; // ISR — posts rarely change; cache for an hour.
 
@@ -38,7 +39,7 @@ export default async function BlogPostPage({
 
   const html = isHtml(post.body);
   const paragraphs = html ? [] : bodyParagraphs(post.body);
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const base = SITE_URL;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
