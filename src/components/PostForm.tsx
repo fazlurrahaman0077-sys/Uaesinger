@@ -25,10 +25,7 @@ export default function PostForm({
 
       <Field name="title" label="Title" required defaultValue={post?.title} placeholder="How to book a wedding singer in Dubai" />
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field name="slug" label="Slug" defaultValue={post?.slug} placeholder="auto from title" hint="Leave blank to auto-generate. /blog/your-slug" />
-        <Field name="category" label="Category" defaultValue={post?.category ?? "Guides"} placeholder="Guides" />
-      </div>
+      <Field name="slug" label="Slug" defaultValue={post?.slug} placeholder="auto from title" hint="Leave blank to auto-generate. /blog/your-slug" />
 
       <div className="grid sm:grid-cols-[1fr_140px] gap-4">
         <Field name="excerpt" label="Excerpt" defaultValue={post?.excerpt ?? ""} placeholder="One-line summary shown on the blog index." />

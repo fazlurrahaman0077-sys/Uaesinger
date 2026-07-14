@@ -73,8 +73,6 @@ export default async function BlogPostPage({
           </Link>
 
           <div className="flex items-center gap-3 text-[11.5px] text-[var(--ink-faint)] mt-6 mb-3">
-            <span className="font-semibold text-[var(--blue-dark)] uppercase tracking-wider">{post.category}</span>
-            <span>·</span>
             <span>{formatDate(post.created_at)}</span>
             <span>·</span>
             <span>{post.read_mins} min read</span>

@@ -21,3 +21,20 @@ export async function setLike(artistId: string, liked: boolean): Promise<{ ok: b
   }
   return { ok: true, signedIn: true };
 }
+
+// Thumbs-up / un-thumb a video. Same deterministic pattern as setLike.
+export async function setVideoLike(videoId: string, liked: boolean): Promise<{ ok: boolean; signedIn: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, signedIn: false };
+
+  if (liked) {
+    const { error } = await supabase.from("video_likes").insert({ user_id: user.id, video_id: videoId });
+    if (error && error.code !== "23505") return { ok: false, signedIn: true };
+  } else {
+    await supabase.from("video_likes").delete().eq("user_id", user.id).eq("video_id", videoId);
+  }
+  return { ok: true, signedIn: true };
+}

@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CATEGORIES, categoryLabel, artistHero, priceRange } from "@/lib/artists";
-import { getAccess, isArtistLiked } from "@/lib/subscription";
+import { getAccess, isArtistLiked, getLikedVideoIds } from "@/lib/subscription";
 import LikeButton from "@/components/LikeButton";
+import VideoLikeButton from "@/components/VideoLikeButton";
 import { getArtistBySlug } from "@/lib/talent";
 import { listArtistVideos } from "@/lib/videos";
 import { listArtistPhotos } from "@/lib/photos";
@@ -57,6 +58,7 @@ export default async function ArtistPage({
     listArtistVideos(artist.id),
     listArtistPhotos(artist.id),
   ]);
+  const likedVideoIds = await getLikedVideoIds(videos.map((v) => v.id));
 
   const base = SITE_URL;
   const coverAbs = artist.photoPath
@@ -156,7 +158,13 @@ export default async function ArtistPage({
                       {videos.map((v) => (
                         <figure key={v.id} className="rounded-xl overflow-hidden border border-[var(--line)] bg-black">
                           <video src={v.src} controls preload="metadata" playsInline className="w-full aspect-video bg-black" />
-                          {v.title && <figcaption className="text-[12px] text-[var(--ink-dim)] px-3 py-2 bg-white">{v.title}</figcaption>}
+                          <figcaption className="flex items-center justify-between gap-3 px-3 py-2 bg-white">
+                            <span className="text-[12px] text-[var(--ink-dim)] truncate">{v.title || `${artist.name.split(" ")[0]}'s reel`}</span>
+                            <span className="flex items-center gap-3 flex-shrink-0">
+                              <VideoLikeButton videoId={v.id} initialCount={v.likesCount} initialLiked={likedVideoIds.has(v.id)} />
+                              <ShareButton path={`/artists/${artist.slug}`} title={`${v.title || artist.name} on UAESinger`} className="text-[12.5px] font-semibold text-[var(--ink-dim)] hover:text-[var(--blue-dark)] transition-colors" />
+                            </span>
+                          </figcaption>
                         </figure>
                       ))}
                     </div>

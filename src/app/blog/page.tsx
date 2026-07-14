@@ -52,8 +52,6 @@ export default async function BlogPage() {
                   )}
                   <div className="p-6 sm:p-7">
                   <div className="flex items-center gap-3 text-[11.5px] text-[var(--ink-faint)] mb-2.5">
-                    <span className="font-semibold text-[var(--blue-dark)] uppercase tracking-wider">{p.category}</span>
-                    <span>·</span>
                     <span>{formatDate(p.created_at)}</span>
                     <span>·</span>
                     <span>{p.read_mins} min read</span>

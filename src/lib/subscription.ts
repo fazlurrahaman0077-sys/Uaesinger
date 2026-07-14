@@ -74,6 +74,22 @@ export async function isArtistLiked(artistId: string): Promise<boolean> {
   return !!data;
 }
 
+// Which of these video ids the current user has liked (for the thumbs-up state).
+export async function getLikedVideoIds(videoIds: string[]): Promise<Set<string>> {
+  if (videoIds.length === 0) return new Set();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return new Set();
+  const { data } = await supabase
+    .from("video_likes")
+    .select("video_id")
+    .eq("user_id", user.id)
+    .in("video_id", videoIds);
+  return new Set((data ?? []).map((r) => r.video_id as string));
+}
+
 export function maskedNumber(): string {
   return "+971 5• ••• ••••";
 }
