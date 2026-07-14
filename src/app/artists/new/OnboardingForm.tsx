@@ -82,9 +82,13 @@ export default function OnboardingForm({ userId }: { userId: string }) {
 
       const vidMeta: { url: string; title: string }[] = [];
       for (let i = 0; i < videos.length; i++) {
-        setStep(`Uploading video ${i + 1} of ${videos.length}…`);
+        const label = videos.length > 1 ? `video ${i + 1} of ${videos.length}` : "video";
         const v = videos[i];
-        const url = await uploadVideoToCloudinary(v.file);
+        // Show live upload % so it doesn't look frozen, then "Processing…" while
+        // Cloudinary transcodes (the wait after bytes hit 100%).
+        const url = await uploadVideoToCloudinary(v.file, (pct) =>
+          setStep(pct >= 100 ? `Processing ${label}…` : `Uploading ${label}… ${pct}%`),
+        );
         vidMeta.push({ url, title: v.title });
       }
 
