@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { type Artist, categoryLabel, artistImage, priceRange } from "@/lib/artists";
 import { CATEGORIES } from "@/lib/artists";
+import LikeButton from "@/components/LikeButton";
 
 function emojiFor(slug: string) {
   return CATEGORIES.find((c) => c.slug === slug)?.emoji ?? "★";
 }
 
-export default function ArtistCard({ artist }: { artist: Artist }) {
+export default function ArtistCard({ artist }: { artist: Artist & { id: string } }) {
   return (
     <Link
       href={`/artists/${artist.slug}`}
@@ -27,6 +28,9 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
             {artist.featuredTag}
           </span>
         )}
+        <div className="absolute top-3 right-3">
+          <LikeButton artistId={artist.id} initialCount={artist.likesCount} />
+        </div>
         <span className="absolute bottom-3 left-3 text-[10.5px] font-semibold text-white bg-black/35 backdrop-blur-sm px-2.5 py-1 rounded-md">
           {emojiFor(artist.category)} {categoryLabel(artist.category)} · {artist.city}
         </span>

@@ -19,7 +19,7 @@ Optional:
 Usage:
   ANTHROPIC_API_KEY=... SRC_SUPABASE_KEY=... PGURL=... LIMIT=3 python3 scripts/import_blogs.py
 """
-import csv, json, os, subprocess, sys, urllib.request, tempfile
+import csv, json, os, re, subprocess, sys, urllib.request, tempfile
 
 SRC_BASE = "https://ubnkqouxnzmpabncdtap.supabase.co/rest/v1/blog_posts"
 MODEL = os.environ.get("MODEL", "claude-haiku-4-5-20251001")
@@ -103,7 +103,9 @@ def main():
     for i, p in enumerate(todo, 1):
         try:
             out = anthropic_rewrite(p["title"], p["content"])
-            slug = out["slug"].strip()
+            # Never trust the LLM's slug verbatim — it emits titles with spaces/:/?.
+            # Match the app's slugify (src/app/admin/actions.ts) so URLs never 404.
+            slug = re.sub(r"[^a-z0-9]+", "-", (out.get("slug") or out["title"]).lower()).strip("-")[:70]
             if slug in have:
                 continue
             have.add(slug)

@@ -59,6 +59,21 @@ export async function isArtistUnlocked(artistId: string): Promise<boolean> {
   return !!data;
 }
 
+export async function isArtistLiked(artistId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase
+    .from("artist_likes")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("artist_id", artistId)
+    .maybeSingle();
+  return !!data;
+}
+
 export function maskedNumber(): string {
   return "+971 5• ••• ••••";
 }

@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CATEGORIES, categoryLabel, artistHero, priceRange } from "@/lib/artists";
-import { getAccess, isArtistUnlocked, maskedNumber } from "@/lib/subscription";
+import { getAccess, isArtistUnlocked, isArtistLiked, maskedNumber } from "@/lib/subscription";
+import LikeButton from "@/components/LikeButton";
 import { getArtistBySlug, getContact } from "@/lib/talent";
 import { listArtistVideos } from "@/lib/videos";
 import { listArtistPhotos } from "@/lib/photos";
@@ -57,6 +58,7 @@ export default async function ArtistPage({
   const canReveal = FREE_MODE ? !!user : !!plan;
   const unlocked = canReveal ? await isArtistUnlocked(artist.id) : false;
   const contact = unlocked ? await getContact(artist.id) : null;
+  const liked = await isArtistLiked(artist.id);
   const videos = await listArtistVideos(artist.id);
   const photos = await listArtistPhotos(artist.id);
   const remaining = quota === null ? null : Math.max(0, quota - unlocksUsed);
@@ -198,11 +200,14 @@ export default async function ArtistPage({
                 )}
               </div>
 
-              <ShareButton
-                path={`/artists/${artist.slug}`}
-                title={`${artist.name} on UAESinger`}
-                className="w-full mb-4 py-2 rounded-lg border border-[var(--line)] text-[13px] font-semibold text-[var(--ink)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all"
-              />
+              <div className="flex items-center gap-2 mb-4">
+                <ShareButton
+                  path={`/artists/${artist.slug}`}
+                  title={`${artist.name} on UAESinger`}
+                  className="flex-1 py-2 rounded-lg border border-[var(--line)] text-[13px] font-semibold text-[var(--ink)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all"
+                />
+                <LikeButton artistId={artist.id} initialCount={artist.likesCount} initialLiked={liked} size="lg" />
+              </div>
 
               <div className="flex items-center gap-2 text-[12.5px] font-semibold text-[var(--blue-dark)] bg-[var(--blue-soft)] border border-[var(--blue-mid)] rounded-lg px-3 py-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-500" />

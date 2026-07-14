@@ -84,6 +84,7 @@ export type Artist = {
   tags: string[];
   gender: string | null;
   nationality: string | null;
+  likesCount: number;
 };
 
 // All nationalities (demonyms). Popular-in-UAE ones first, then the full A–Z list.
