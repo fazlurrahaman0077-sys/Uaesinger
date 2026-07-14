@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SubmitButton from "@/components/SubmitButton";
 import { sendContactMessage } from "./actions";
 
 export const metadata: Metadata = {
@@ -66,9 +67,9 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                     <span className="text-[12.5px] font-semibold text-[var(--ink)]">Message <span className="text-[var(--orange)]">*</span></span>
                     <textarea name="message" rows={6} required className={`${input} resize-y`} placeholder="How can we help?" />
                   </label>
-                  <button type="submit" className="py-3 rounded-xl bg-[var(--blue)] text-white text-[14.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm">
+                  <SubmitButton className="py-3 rounded-xl bg-[var(--blue)] text-white text-[14.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed">
                     Send message
-                  </button>
+                  </SubmitButton>
                 </form>
               )}
             </div>
