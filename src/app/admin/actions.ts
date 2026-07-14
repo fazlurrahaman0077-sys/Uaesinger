@@ -17,6 +17,7 @@ function postFields(formData: FormData) {
     body: String(formData.get("body") ?? "").trim() || null,
     read_mins: Number(formData.get("read_mins")) || 4,
     published: formData.get("published") === "on",
+    cover_url: String(formData.get("cover_url") ?? "").trim() || null,
   };
 }
 

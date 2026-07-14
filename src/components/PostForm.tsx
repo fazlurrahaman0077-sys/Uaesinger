@@ -1,4 +1,5 @@
 import type { Post } from "@/lib/blog";
+import CoverImageField from "@/components/CoverImageField";
 
 // Shared blog editor — used by the new and edit admin pages. The server action
 // (createPost / updatePost) is passed in; edit passes an existing `post`.
@@ -33,6 +34,8 @@ export default function PostForm({
         <Field name="excerpt" label="Excerpt" defaultValue={post?.excerpt ?? ""} placeholder="One-line summary shown on the blog index." />
         <Field name="read_mins" label="Read mins" type="number" defaultValue={post?.read_mins ?? 4} />
       </div>
+
+      <CoverImageField defaultUrl={post?.cover_url} />
 
       <label className="flex flex-col gap-1.5">
         <span className="text-[12.5px] font-semibold text-[var(--ink)]">Body</span>

@@ -7,12 +7,22 @@ export function cloudinaryConfigured(): boolean {
   return !!(CLOUDINARY_CLOUD && CLOUDINARY_PRESET);
 }
 
-export async function uploadVideoToCloudinary(
+export function uploadVideoToCloudinary(file: File, onProgress?: (pct: number) => void): Promise<string> {
+  return uploadToCloudinary(file, "video", onProgress);
+}
+
+// Image upload (blog covers, etc.) — same unsigned preset, image endpoint.
+export function uploadImageToCloudinary(file: File, onProgress?: (pct: number) => void): Promise<string> {
+  return uploadToCloudinary(file, "image", onProgress);
+}
+
+function uploadToCloudinary(
   file: File,
+  resourceType: "video" | "image",
   onProgress?: (pct: number) => void,
 ): Promise<string> {
-  if (!cloudinaryConfigured()) throw new Error("Video uploads aren't configured yet.");
-  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`;
+  if (!cloudinaryConfigured()) throw new Error("Uploads aren't configured yet.");
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`;
   const form = new FormData();
   form.append("file", file);
   form.append("upload_preset", CLOUDINARY_PRESET!);

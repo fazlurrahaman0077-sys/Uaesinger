@@ -19,12 +19,21 @@ export async function generateMetadata({
   if (!post) return { title: "Post not found | UAESinger" };
   const title = `${post.title} | UAESinger`;
   const url = `/blog/${post.slug}`;
+  const images = post.cover_url ? [post.cover_url] : undefined;
   return {
     title,
     description: post.excerpt ?? undefined,
     alternates: { canonical: url },
-    openGraph: { type: "article", title, description: post.excerpt ?? undefined, url, siteName: "UAESinger" },
-    twitter: { card: "summary_large_image", title, description: post.excerpt ?? undefined },
+    openGraph: {
+      type: "article",
+      title,
+      description: post.excerpt ?? undefined,
+      url,
+      siteName: "UAESinger",
+      images,
+      publishedTime: post.created_at,
+    },
+    twitter: { card: "summary_large_image", title, description: post.excerpt ?? undefined, images },
   };
 }
 
@@ -47,6 +56,7 @@ export default async function BlogPostPage({
     description: post.excerpt ?? undefined,
     datePublished: post.created_at,
     dateModified: post.created_at,
+    ...(post.cover_url && { image: post.cover_url }),
     author: { "@type": "Organization", name: "UAESinger" },
     publisher: { "@type": "Organization", name: "UAESinger", url: base },
     mainEntityOfPage: `${base}/blog/${post.slug}`,
@@ -73,6 +83,15 @@ export default async function BlogPostPage({
           <h1 className="font-display text-[32px] sm:text-[40px] font-semibold text-[var(--ink)] leading-tight mb-8">
             {post.title}
           </h1>
+
+          {post.cover_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.cover_url}
+              alt={post.title}
+              className="w-full aspect-[16/9] object-cover rounded-2xl border border-[var(--line)] mb-8"
+            />
+          )}
 
           {html ? (
             // Strip the body's own <h1> — the page already renders one (single-h1 SEO).

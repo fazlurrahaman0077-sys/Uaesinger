@@ -11,6 +11,7 @@ export type Post = {
   read_mins: number;
   published: boolean;
   created_at: string;
+  cover_url: string | null;
 };
 
 export async function listPosts(): Promise<Post[]> {
@@ -18,7 +19,7 @@ export async function listPosts(): Promise<Post[]> {
   // Index only needs metadata — never fetch the (large) body column here.
   const { data } = await supabase
     .from("posts")
-    .select("id, slug, title, excerpt, category, read_mins, published, created_at")
+    .select("id, slug, title, excerpt, category, read_mins, published, created_at, cover_url")
     .eq("published", true)
     .order("created_at", { ascending: false })
     .limit(60);

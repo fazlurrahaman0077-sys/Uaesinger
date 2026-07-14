@@ -44,8 +44,13 @@ export default async function BlogPage() {
                 <Link
                   key={p.slug}
                   href={`/blog/${p.slug}`}
-                  className="block bg-white border border-[var(--line)] rounded-2xl p-6 sm:p-7 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(16,26,38,0.08)] transition-all group"
+                  className="block bg-white border border-[var(--line)] rounded-2xl overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(16,26,38,0.08)] transition-all group"
                 >
+                  {p.cover_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.cover_url} alt={p.title} loading="lazy" className="w-full aspect-[16/9] object-cover border-b border-[var(--line)]" />
+                  )}
+                  <div className="p-6 sm:p-7">
                   <div className="flex items-center gap-3 text-[11.5px] text-[var(--ink-faint)] mb-2.5">
                     <span className="font-semibold text-[var(--blue-dark)] uppercase tracking-wider">{p.category}</span>
                     <span>·</span>
@@ -60,6 +65,7 @@ export default async function BlogPage() {
                   <span className="inline-block mt-3 text-[13px] font-semibold text-[var(--blue-dark)] group-hover:underline">
                     Read article →
                   </span>
+                  </div>
                 </Link>
               ))
             )}

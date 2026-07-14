@@ -40,7 +40,10 @@
 .blog-content li { margin: 0.3em 0; }
 .blog-content a { color: var(--blue-dark); text-decoration: underline; }
 .blog-content strong { color: var(--ink); font-weight: 600; }
-.blog-content img { display: none; } /* imported posts are image-free */
+.blog-content img { display: block; max-width: 100%; height: auto; border-radius: 12px; margin: 1.5em auto; border: 1px solid var(--line); }
+.blog-content figure { margin: 1.5em 0; }
+.blog-content figcaption { font-size: 13px; color: var(--ink-faint); text-align: center; margin-top: 0.5em; }
+.blog-content blockquote { border-left: 3px solid var(--blue-mid); padding-left: 1em; margin: 1.2em 0; color: var(--ink); font-style: italic; }
 .blog-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 14px; }
 .blog-content th, .blog-content td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
 
