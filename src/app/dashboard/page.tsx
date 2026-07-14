@@ -243,7 +243,8 @@ async function CreatorView({ userId }: { userId: string }) {
             </div>
 
             <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 items-start">
-              {/* Edit listing */}
+              {/* Edit listing + delete (one column) */}
+              <div className="flex flex-col gap-3">
               <form action={updateListing} className="bg-white border border-[var(--line)] rounded-2xl p-6 flex flex-col gap-4">
                 <input type="hidden" name="artistId" value={a.id} />
                 <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)]">Edit listing</p>
@@ -275,18 +276,22 @@ async function CreatorView({ userId }: { userId: string }) {
                 </button>
               </form>
               {/* Danger zone — separate form so delete never submits the edit form */}
-              <details className="mt-3">
-                <summary className="text-[12px] text-[var(--ink-faint)] cursor-pointer hover:text-[var(--coral)] list-none">Delete this listing</summary>
-                <div className="mt-2 p-3.5 rounded-lg bg-red-50 border border-red-100">
-                  <p className="text-[12px] text-[var(--ink-dim)] mb-3">Permanently removes this listing, its videos, photos and enquiries. This can&apos;t be undone.</p>
+              <details className="bg-white border border-red-200 rounded-2xl p-4">
+                <summary className="flex items-center gap-2 text-[13px] font-semibold text-[var(--coral)] cursor-pointer list-none">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m-9 0v14a2 2 0 002 2h6a2 2 0 002-2V6" /></svg>
+                  Delete this profile
+                </summary>
+                <div className="mt-3 p-3.5 rounded-lg bg-red-50 border border-red-100">
+                  <p className="text-[12px] text-[var(--ink-dim)] mb-3">Permanently removes <strong>{a.name}</strong> — its videos, photos and enquiries. This can&apos;t be undone.</p>
                   <form action={deleteListing}>
                     <input type="hidden" name="artistId" value={a.id} />
                     <button className="text-[12.5px] font-semibold text-white bg-[var(--coral)] px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
-                      Yes, delete listing
+                      Yes, permanently delete
                     </button>
                   </form>
                 </div>
               </details>
+              </div>
 
               {/* Enquiry inbox */}
               <div>
