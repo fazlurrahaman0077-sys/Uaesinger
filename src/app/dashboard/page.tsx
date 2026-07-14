@@ -149,12 +149,13 @@ async function HirerView({ userId }: { userId: string }) {
           <div className="bg-white border border-[var(--line)] rounded-2xl divide-y divide-[var(--line)]">
             {enquiries.map((e) => (
               <div key={e.id} className="px-5 py-3.5 text-[13px]">
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <Link href={`/artists/${e.artistSlug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">{e.artistName}</Link>
-                    <p className="text-[12px] text-[var(--ink-faint)] truncate">
-                      {e.eventDate ? `${e.eventDate} · ` : ""}{e.message || "No message"}
+                    <p className="text-[11.5px] text-[var(--ink-faint)] mt-0.5">
+                      Sent {fmtWhen(e.createdAt)}{e.eventDate ? ` · Event ${e.eventDate}` : ""}
                     </p>
+                    {e.message && <p className="text-[12.5px] text-[var(--ink-dim)] mt-1">{e.message}</p>}
                   </div>
                   <StatusBadge status={e.status} />
                 </div>
@@ -303,15 +304,25 @@ async function CreatorView({ userId }: { userId: string }) {
                   <div className="flex flex-col gap-3">
                     {inbox.map((e) => (
                       <div key={e.id} className="bg-white border border-[var(--line)] rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1 gap-2">
                           <p className="font-semibold text-[var(--ink)] text-[14px]">{e.hirerName || "A client"}</p>
                           <StatusBadge status={e.status} />
                         </div>
-                        <p className="text-[12px] text-[var(--ink-faint)] mb-2">
-                          {e.eventDate ? `Event: ${e.eventDate}` : "No date"}
-                          {e.hirerPhone ? ` · ${e.hirerPhone}` : ""}
-                        </p>
-                        {e.message && <p className="text-[13px] text-[var(--ink-dim)] mb-3">{e.message}</p>}
+                        <p className="text-[11.5px] text-[var(--ink-faint)] mb-2.5">Received {fmtWhen(e.createdAt)}</p>
+                        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12.5px] mb-3">
+                          <dt className="text-[var(--ink-faint)]">Event date</dt>
+                          <dd className="text-[var(--ink)]">{e.eventDate || "Not specified"}</dd>
+                          <dt className="text-[var(--ink-faint)]">Phone</dt>
+                          <dd>
+                            {e.hirerPhone ? (
+                              <a href={`tel:${e.hirerPhone.replace(/\s/g, "")}`} className="text-[var(--blue-dark)] font-semibold hover:underline">{e.hirerPhone}</a>
+                            ) : (
+                              <span className="text-[var(--ink-faint)]">Not provided</span>
+                            )}
+                          </dd>
+                          <dt className="text-[var(--ink-faint)]">Message</dt>
+                          <dd className="text-[var(--ink-dim)]">{e.message || "—"}</dd>
+                        </dl>
                         <form action={updateBookingStatus} className="flex items-center gap-2">
                           <input type="hidden" name="id" value={e.id} />
                           <select name="status" defaultValue={e.status} className="flex-1 px-3 py-1.5 rounded-lg border border-[var(--line)] text-[12.5px] bg-white outline-none focus:border-[var(--blue)]">
@@ -375,6 +386,16 @@ async function CreatorView({ userId }: { userId: string }) {
 }
 
 // ---------------------------------------------------------------- primitives
+// Human-readable "received" time, e.g. "15 Jul 2026, 20:43".
+function fmtWhen(iso: string): string {
+  const d = new Date(iso);
+  return (
+    d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
+    ", " +
+    d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   return (
     <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${statusStyle[status] ?? statusStyle.new}`}>
