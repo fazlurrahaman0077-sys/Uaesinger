@@ -16,6 +16,13 @@ export function publicVideoUrl(path: string): string {
 
 type Row = { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null };
 
+// Insert Cloudinary auto-format/auto-quality so viewers stream a right-sized
+// rendition instead of the raw upload. No-op for non-Cloudinary urls.
+function optimize(url: string | null): string | null {
+  if (!url || !url.includes("res.cloudinary.com") || url.includes("/upload/f_")) return url;
+  return url.replace("/upload/", "/upload/f_auto,q_auto/");
+}
+
 export async function listArtistVideos(artistId: string): Promise<Video[]> {
   const supabase = createPublicClient();
   const { data } = await supabase
@@ -25,7 +32,7 @@ export async function listArtistVideos(artistId: string): Promise<Video[]> {
     .order("created_at", { ascending: true });
   return ((data ?? []) as Row[])
     .map((r) => {
-      const src = r.url || (r.storage_path ? publicVideoUrl(r.storage_path) : null);
+      const src = optimize(r.url) || (r.storage_path ? publicVideoUrl(r.storage_path) : null);
       return src ? { id: r.id, artistId: r.artist_id, title: r.title, src } : null;
     })
     .filter((v): v is Video => v !== null);

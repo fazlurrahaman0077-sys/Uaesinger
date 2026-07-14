@@ -11,6 +11,10 @@ export default function VideoUploader({ artistId }: { artistId: string }) {
   const [pct, setPct] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Once the bytes are all sent (100%), Cloudinary is still transcoding before
+  // it returns the URL — show "Processing…" so it doesn't look frozen.
+  const processing = busy && pct >= 100;
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -48,7 +52,7 @@ export default function VideoUploader({ artistId }: { artistId: string }) {
         </div>
       )}
       <button type="submit" disabled={busy} className="py-2 rounded-lg bg-[var(--blue)] text-white text-[13px] font-semibold hover:bg-[var(--blue-dark)] transition-all disabled:opacity-60">
-        {busy ? `Uploading… ${pct}%` : "Upload video"}
+        {processing ? "Processing…" : busy ? `Uploading… ${pct}%` : "Upload video"}
       </button>
       <p className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 100 MB. Auto-optimised for fast playback.</p>
     </form>
