@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const EMAIL = "hello@uaesinger.com";
-const WHATSAPP = "+971 50 000 0000"; // TODO: replace with your real number
+const PHONE = "+971 58 579 3050"; // support line (call + WhatsApp)
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ sent?: string; error?: string }> }) {
   const { sent, error } = await searchParams;
@@ -32,7 +32,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             {/* Contact details */}
             <div className="flex flex-col gap-4">
               <ContactCard icon="✉️" label="Email" value={EMAIL} href={`mailto:${EMAIL}`} />
-              <ContactCard icon="💬" label="WhatsApp" value={WHATSAPP} href={`https://wa.me/${WHATSAPP.replace(/[^\d]/g, "")}`} />
+              <ContactCard icon="📞" label="Support" value={PHONE} href={`tel:${PHONE.replace(/[^\d+]/g, "")}`} />
+              <ContactCard icon="💬" label="WhatsApp" value={PHONE} href={`https://wa.me/${PHONE.replace(/[^\d]/g, "")}`} />
               <ContactCard icon="📍" label="Based in" value="Dubai, United Arab Emirates" />
               <div className="bg-white border border-[var(--line)] rounded-2xl p-5">
                 <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-2">Hours</p>

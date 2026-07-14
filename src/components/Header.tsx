@@ -9,7 +9,6 @@ import Avatar from "@/components/Avatar";
 
 const NAV = [
   { label: "Browse talent", href: "/artists" },
-  { label: "Pricing", href: "/pricing" },
   { label: "For artists", href: "/artists/new" },
   { label: "Blog", href: "/blog" },
 ];
@@ -77,9 +76,6 @@ export default function Header() {
                       <p className="px-4 py-2 text-[12px] text-[var(--ink-faint)] truncate border-b border-[var(--line)]">{email}</p>
                       <Link href="/dashboard" onClick={() => setMenu(false)} className="block px-4 py-2.5 text-[13.5px] font-semibold text-[var(--ink)] hover:bg-[var(--bg2)] transition-colors">
                         Dashboard
-                      </Link>
-                      <Link href="/pricing" onClick={() => setMenu(false)} className="block px-4 py-2.5 text-[13.5px] font-medium text-[var(--ink-dim)] hover:bg-[var(--bg2)] transition-colors">
-                        Plans & billing
                       </Link>
                       <button onClick={signOut} className="block w-full text-left px-4 py-2.5 text-[13.5px] font-medium text-[var(--coral)] hover:bg-[var(--bg2)] transition-colors border-t border-[var(--line)]">
                         Sign out

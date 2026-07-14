@@ -110,7 +110,7 @@ export default function Hero() {
                   Contact locked
                 </div>
                 <Link
-                  href="/pricing"
+                  href="/artists"
                   className="text-[11px] font-bold text-white bg-[var(--blue)] px-3 py-1.5 rounded-md hover:bg-[var(--blue-dark)] transition-colors"
                 >
                   Unlock

@@ -4,7 +4,6 @@ import { CATEGORIES } from "@/lib/artists";
 
 const PLATFORM = [
   { label: "Browse talent", href: "/artists" },
-  { label: "Pricing", href: "/pricing" },
   { label: "For artists", href: "/artists/new" },
   { label: "Blog", href: "/blog" },
   { label: "Sign in", href: "/signin" },

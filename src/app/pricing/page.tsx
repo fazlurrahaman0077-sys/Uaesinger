@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getAccess } from "@/lib/subscription";
-import { PLANS, getPlan } from "@/lib/plans";
+import { PLANS, getPlan, FREE_MODE } from "@/lib/plans";
 import { subscribe } from "./actions";
 
 export const metadata: Metadata = {
@@ -13,6 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
+  // Hidden while everything is free — flip FREE_MODE off (src/lib/plans.ts) to
+  // bring the pricing page back with paid plans.
+  if (FREE_MODE) redirect("/artists");
+
   const { user, plan, quota, unlocksUsed } = await getAccess();
   const current = getPlan(plan);
   const remaining = quota === null ? null : Math.max(0, quota - unlocksUsed);
