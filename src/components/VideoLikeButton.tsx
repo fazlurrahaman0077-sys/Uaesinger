@@ -39,13 +39,13 @@ export default function VideoLikeButton({
       onClick={toggle}
       disabled={pending}
       aria-pressed={liked}
-      aria-label={liked ? "Remove like" : "Like video"}
+      aria-label={liked ? "Unlike video" : "Like video"}
       className={`inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-colors disabled:opacity-60 ${
-        liked ? "text-[var(--blue-dark)]" : "text-[var(--ink-dim)] hover:text-[var(--blue-dark)]"
+        liked ? "text-[#ef4444]" : "text-[var(--ink-dim)] hover:text-[#ef4444]"
       }`}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true">
-        <path d="M7 10v11M2 13v6a2 2 0 002 2h13.3a2 2 0 002-1.7l1.3-8A2 2 0 0017.9 9H14V4a2 2 0 00-2-2l-4 8H7z" />
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
       {count}
     </button>
