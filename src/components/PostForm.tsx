@@ -17,9 +17,9 @@ export default function PostForm({
     <form action={action} className="flex flex-col gap-4">
       {isEdit && <input type="hidden" name="id" value={post.id} />}
 
-      {error === "title" && (
+      {error && (
         <p className="text-[13px] text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2.5">
-          A title is required.
+          {error === "title" ? "A title is required." : `Couldn't save: ${error}`}
         </p>
       )}
 

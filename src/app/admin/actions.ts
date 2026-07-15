@@ -57,7 +57,8 @@ export async function createPost(formData: FormData) {
   if (!fields.title) redirect("/admin/posts/new?error=title");
 
   const slug = await uniqueSlug(supabase, String(formData.get("slug") ?? ""), fields.title);
-  await supabase.from("posts").insert({ slug, ...fields });
+  const { error } = await supabase.from("posts").insert({ slug, ...fields });
+  if (error) redirect(`/admin/posts/new?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath("/admin");
   revalidatePath("/blog");
@@ -71,7 +72,8 @@ export async function updatePost(formData: FormData) {
   if (!id || !fields.title) redirect(`/admin/posts/${id}/edit?error=title`);
 
   const slug = await uniqueSlug(supabase, String(formData.get("slug") ?? ""), fields.title, id);
-  await supabase.from("posts").update({ slug, ...fields }).eq("id", id);
+  const { error } = await supabase.from("posts").update({ slug, ...fields }).eq("id", id);
+  if (error) redirect(`/admin/posts/${id}/edit?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath("/admin");
   revalidatePath("/blog");
