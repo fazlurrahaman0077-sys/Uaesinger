@@ -9,7 +9,6 @@ import LikeButton from "@/components/LikeButton";
 import VideoLikeButton from "@/components/VideoLikeButton";
 import { getArtistBySlug } from "@/lib/talent";
 import { listArtistVideos } from "@/lib/videos";
-import { listArtistPhotos } from "@/lib/photos";
 import ShareButton from "@/components/ShareButton";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/site";
@@ -52,11 +51,10 @@ export default async function ArtistPage({
   // Contacts are confidential: the hirer sends an enquiry, the artist chooses to
   // share their card back (seen in the hirer's dashboard). No phone on the page.
   // Fan these out in parallel — they're independent, so the page renders faster.
-  const [{ user }, liked, videos, photos] = await Promise.all([
+  const [{ user }, liked, videos] = await Promise.all([
     getAccess(),
     isArtistLiked(artist.id),
     listArtistVideos(artist.id),
-    listArtistPhotos(artist.id),
   ]);
   const likedVideoIds = await getLikedVideoIds(videos.map((v) => v.id));
 
@@ -100,23 +98,39 @@ export default async function ArtistPage({
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-8 items-start">
             {/* Left: hero + bio */}
             <div>
-              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--blue-soft)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={artistHero(artist.category, artist.photoPath)}
-                  alt={`${artist.name} performing`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                {artist.featuredTag && (
-                  <span className="absolute top-4 left-4 text-[11px] font-bold tracking-wider uppercase text-white bg-[var(--blue)] px-3 py-1 rounded-md">
-                    {artist.featuredTag}
-                  </span>
-                )}
-                <span className="absolute bottom-4 left-4 text-[12px] font-semibold text-white bg-black/35 backdrop-blur-sm px-3 py-1.5 rounded-md">
-                  {emoji} {categoryLabel(artist.category)} · {artist.city}
-                </span>
-              </div>
+              {/* Video-only hero — artist photos are never shown (protects identity). */}
+              {videos.length > 0 ? (
+                <figure className="rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
+                  <div className="relative aspect-[16/9] bg-black">
+                    <video src={videos[0].src} controls preload="metadata" playsInline className="absolute inset-0 w-full h-full object-cover" />
+                    {/* Chips sit at the top so they never cover the player controls. */}
+                    <span className="absolute top-4 left-4 text-[12px] font-semibold text-white bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-md pointer-events-none">
+                      {emoji} {categoryLabel(artist.category)} · {artist.city}
+                    </span>
+                    {artist.featuredTag && (
+                      <span className="absolute top-4 right-4 text-[11px] font-bold tracking-wider uppercase text-white bg-[var(--blue)] px-3 py-1 rounded-md pointer-events-none">
+                        {artist.featuredTag}
+                      </span>
+                    )}
+                  </div>
+                  <figcaption className="flex items-center justify-between gap-3 px-4 py-3 bg-white">
+                    <span className="text-[13px] font-semibold text-[var(--ink)] truncate">{videos[0].title || `${artist.name.split(" ")[0]}'s featured reel`}</span>
+                    <span className="flex items-center gap-4 flex-shrink-0">
+                      <VideoLikeButton videoId={videos[0].id} initialCount={videos[0].likesCount} initialLiked={likedVideoIds.has(videos[0].id)} />
+                      <ShareButton path={`/artists/${artist.slug}`} title={`${videos[0].title || artist.name} on UAESinger`} className="text-[12.5px] font-semibold text-[var(--ink-dim)] hover:text-[var(--blue-dark)] transition-colors" />
+                    </span>
+                  </figcaption>
+                </figure>
+              ) : (
+                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--blue-soft)] flex items-center justify-center text-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={artistHero(artist.category)} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  <p className="relative text-[13px] font-semibold text-white bg-black/35 backdrop-blur-sm px-4 py-2 rounded-md">
+                    {emoji} {artist.name.split(" ")[0]} hasn’t added a video yet
+                  </p>
+                </div>
+              )}
 
               <div className="mt-8">
                 <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">
@@ -139,25 +153,13 @@ export default async function ArtistPage({
                   {artist.tags.length > 0 && <TagRow title="Good for" items={artist.tags} />}
                 </div>
 
-                {photos.length > 0 && (
+                {videos.length > 1 && (
                   <div className="mt-8">
-                    <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">Gallery</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {photos.map((p) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img key={p.id} src={p.url} alt={`${artist.name}`} loading="lazy" className="w-full aspect-square object-cover rounded-xl border border-[var(--line)]" />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {videos.length > 0 && (
-                  <div className="mt-8">
-                    <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">Watch {artist.name.split(" ")[0]}</h2>
+                    <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">More from {artist.name.split(" ")[0]}</h2>
                     <div className="grid sm:grid-cols-2 gap-4">
-                      {videos.map((v) => (
+                      {videos.slice(1).map((v) => (
                         <figure key={v.id} className="rounded-xl overflow-hidden border border-[var(--line)] bg-black">
-                          <video src={v.src} controls preload="metadata" playsInline className="w-full aspect-video bg-black" />
+                          <video src={v.src} controls preload="metadata" playsInline className="w-full aspect-video object-cover bg-black" />
                           <figcaption className="flex items-center justify-between gap-3 px-3 py-2 bg-white">
                             <span className="text-[12px] text-[var(--ink-dim)] truncate">{v.title || `${artist.name.split(" ")[0]}'s reel`}</span>
                             <span className="flex items-center gap-3 flex-shrink-0">
