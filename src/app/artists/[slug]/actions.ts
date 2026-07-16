@@ -89,27 +89,43 @@ export async function submitReview(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Please sign in to leave a review." };
 
+  // Say plainly why, rather than inferring it from an error code — 42501 covers
+  // every privilege failure, not just this one. RLS is still the real guard.
+  const { data: owned } = await supabase
+    .from("artists")
+    .select("id")
+    .eq("id", artistId)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (owned) return { ok: false, error: "You can't review your own profile." };
+
   // Identity comes from the session, never the form — a typed name is spoofable,
   // and full_name isn't unique (two live accounts are both "Micah"). The email is
   // the identity; full_name is only a display label.
   const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
   const displayName = profile?.full_name?.trim() || (user.email ?? "").split("@")[0] || "Anonymous";
+  const row = { author_name: displayName, author_email: user.email, rating, body };
 
-  const { error } = await supabase.from("artist_reviews").upsert(
-    {
-      artist_id: artistId,
-      user_id: user.id,
-      author_name: displayName,
-      author_email: user.email,
-      rating,
-      body,
-    },
-    { onConflict: "user_id,artist_id" },
-  );
-  // RLS rejects self-reviews (owner_id = auth.uid()) with a policy violation.
-  if (error) {
-    return { ok: false, error: error.code === "42501" ? "You can't review your own profile." : "Couldn't post your review — please try again." };
+  // Deliberately not .upsert(): it sends Prefer: resolution=merge-duplicates, and
+  // PostgREST then builds ON CONFLICT DO UPDATE SET author_email = excluded.author_email.
+  // Reading EXCLUDED needs SELECT on author_email, which v23 revokes to keep the
+  // email private — so the upsert dies with 42501. Insert, then update on conflict:
+  // the update writes literals and never reads the revoked column.
+  const { error: insertError } = await supabase
+    .from("artist_reviews")
+    .insert({ artist_id: artistId, user_id: user.id, ...row });
+
+  if (insertError) {
+    if (insertError.code !== "23505") return { ok: false, error: "Couldn't post your review — please try again." };
+    // Already reviewed this artist — treat a second submit as an edit.
+    const { error: updateError } = await supabase
+      .from("artist_reviews")
+      .update(row)
+      .eq("user_id", user.id)
+      .eq("artist_id", artistId);
+    if (updateError) return { ok: false, error: "Couldn't update your review — please try again." };
   }
+
   revalidatePath(`/artists/${slug}`);
   return { ok: true };
 }

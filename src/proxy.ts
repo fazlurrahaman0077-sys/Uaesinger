@@ -33,8 +33,13 @@ export async function proxy(request: NextRequest) {
   // cookies). The IP is hashed with the day so we never store raw addresses.
   // A per-day cookie throttles writes so the proxy doesn't hit the DB on every
   // request; the (visitor_id, day) PK is the real dedupe guard.
+  // Crawlers were being counted as visitors — each bot IP is a distinct "visitor",
+  // which is most of the traffic on a site this young. Cheap UA filter, no dep.
+  const ua = request.headers.get("user-agent") ?? "";
+  const isBot = !ua || /bot|crawl|spider|slurp|headless|preview|monitor|curl|wget|python-|axios|fetch\//i.test(ua);
+
   const today = new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
-  if (request.cookies.get("v_day")?.value !== today) {
+  if (!isBot && request.cookies.get("v_day")?.value !== today) {
     response.cookies.set("v_day", today, { maxAge: 60 * 60 * 24, httpOnly: true, sameSite: "lax" });
     const fwd = request.headers.get("x-forwarded-for");
     const ip = (fwd ? fwd.split(",")[0].trim() : "") || request.headers.get("x-real-ip") || "local";

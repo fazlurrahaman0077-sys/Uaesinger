@@ -19,7 +19,7 @@ export default async function AdminPage() {
     users,
     creators,
     visitorsToday,
-    { data: weekVisits },
+    weekVisits,
     { data: payments },
     { data: completedPay },
     { data: messages },
@@ -30,14 +30,17 @@ export default async function AdminPage() {
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "artist"),
     supabase.from("visits").select("visitor_id", { count: "exact", head: true }).eq("day", today),
-    supabase.from("visits").select("visitor_id").gte("day", weekAgo),
+    supabase.from("visits").select("visitor_id", { count: "exact", head: true }).gte("day", weekAgo),
     supabase.from("payments").select("id, user_email, plan, amount_aed, status, created_at").order("created_at", { ascending: false }).limit(50),
     supabase.from("payments").select("amount_aed").eq("status", "completed"),
     supabase.from("contact_messages").select("id, name, email, subject, message, created_at").order("created_at", { ascending: false }).limit(50),
   ]);
 
-  // Unique visitors over the last 7 days (distinct across the daily rows).
-  const weekUnique = new Set((weekVisits ?? []).map((v) => v.visitor_id)).size;
+  // visitor_id is SHA-256(ip:day:...) — salted with the day, so the same IP gets a
+  // different id every day and cannot be deduped across days. This is visit-days
+  // (one per IP per day), NOT unique people; labelled "Visits 7d" to say so. A real
+  // 7-day unique count needs a day-independent id, which is a privacy trade-off.
+  const visits7d = weekVisits.count ?? 0;
   const revenue = (completedPay ?? []).reduce((sum, p) => sum + (p.amount_aed ?? 0), 0);
 
   const stats = [
@@ -45,7 +48,7 @@ export default async function AdminPage() {
     { label: "Content creators", value: creators.count ?? 0 },
     { label: "Active subs", value: activeSubs.count ?? 0 },
     { label: "Visitors today", value: visitorsToday.count ?? 0 },
-    { label: "Visitors 7d", value: weekUnique },
+    { label: "Visits 7d", value: visits7d },
     { label: "Artists live", value: artists?.filter((a) => a.is_published).length ?? 0 },
     { label: "Revenue AED", value: revenue.toLocaleString() },
     { label: "Support msgs", value: messages?.length ?? 0 },
