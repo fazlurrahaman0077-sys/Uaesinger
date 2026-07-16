@@ -59,20 +59,25 @@ export async function isArtistUnlocked(artistId: string): Promise<boolean> {
   return !!data;
 }
 
-export async function isArtistLiked(artistId: string): Promise<boolean> {
+// Has the current user reacted to this artist? artist_likes (heart, v18) and
+// artist_thumbs (thumbs up, v22) have the same shape, so one lookup serves both.
+async function hasReacted(table: "artist_likes" | "artist_thumbs", artistId: string): Promise<boolean> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return false;
   const { data } = await supabase
-    .from("artist_likes")
+    .from(table)
     .select("id")
     .eq("user_id", user.id)
     .eq("artist_id", artistId)
     .maybeSingle();
   return !!data;
 }
+
+export const isArtistLiked = (artistId: string) => hasReacted("artist_likes", artistId);
+export const isArtistThumbed = (artistId: string) => hasReacted("artist_thumbs", artistId);
 
 // Which of these video ids the current user has liked (for the thumbs-up state).
 export async function getLikedVideoIds(videoIds: string[]): Promise<Set<string>> {

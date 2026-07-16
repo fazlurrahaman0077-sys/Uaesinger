@@ -24,6 +24,8 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     bio: "",
     languages: "",
     genres: "",
+    skills: "",
+    experience_years: "",
     availability: "Available now",
     price_min: "",
     price_max: "",
@@ -173,6 +175,14 @@ export default function OnboardingForm({ userId }: { userId: string }) {
             </Field>
             <Field label="Styles / genres" hint="Comma separated">
               <input value={f.genres} onChange={set("genres")} placeholder="Jazz, Arabic, Pop" className={input} />
+            </Field>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Skills" hint="Comma separated — shown on your profile">
+              <input value={f.skills} onChange={set("skills")} placeholder="Live vocals, Guitar, MC / host" className={input} />
+            </Field>
+            <Field label="Years of experience">
+              <input value={f.experience_years} onChange={set("experience_years")} type="number" min="0" max="70" placeholder="8" className={input} />
             </Field>
           </div>
           <Field label="Search tags" hint="Comma separated — keywords clients might search (e.g. wedding, corporate, bilingual)">

@@ -8,6 +8,7 @@ type Row = {
   slug: string;
   name: string;
   category_slug: string;
+  owner_id: string | null;
   city: string;
   tagline: string | null;
   bio: string | null;
@@ -27,10 +28,13 @@ type Row = {
   gender: string | null;
   nationality: string | null;
   likes_count: number | null;
+  thumbs_count: number | null;
+  experience_years: number | null;
+  skills: string[] | null;
 };
 
 const COLS =
-  "id, slug, name, category_slug, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags, gender, nationality, likes_count";
+  "id, slug, name, category_slug, owner_id, city, tagline, bio, rating, reviews, gigs, languages, genres, availability, response_rate, featured_tag, price_min, price_max, photo_path, subcategory, tags, gender, nationality, likes_count, thumbs_count, experience_years, skills";
 
 function toArtist(r: Row): Artist & { id: string } {
   return {
@@ -38,6 +42,7 @@ function toArtist(r: Row): Artist & { id: string } {
     slug: r.slug,
     name: r.name,
     category: r.category_slug,
+    ownerId: r.owner_id,
     city: r.city,
     tagline: r.tagline ?? "",
     bio: r.bio ?? "",
@@ -57,6 +62,9 @@ function toArtist(r: Row): Artist & { id: string } {
     gender: r.gender,
     nationality: r.nationality,
     likesCount: r.likes_count ?? 0,
+    thumbsCount: r.thumbs_count ?? 0,
+    experienceYears: r.experience_years,
+    skills: r.skills ?? [],
   };
 }
 

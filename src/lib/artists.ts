@@ -66,6 +66,7 @@ export type Artist = {
   slug: string;
   name: string;
   category: string; // Category.slug
+  ownerId: string | null;
   city: string;
   tagline: string;
   bio: string;
@@ -85,6 +86,9 @@ export type Artist = {
   gender: string | null;
   nationality: string | null;
   likesCount: number;
+  thumbsCount: number;
+  experienceYears: number | null;
+  skills: string[];
 };
 
 // All nationalities (demonyms). Popular-in-UAE ones first, then the full A–Z list.

@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CATEGORIES, categoryLabel, artistHero, priceRange } from "@/lib/artists";
-import { getAccess, isArtistLiked, getLikedVideoIds } from "@/lib/subscription";
+import { getAccess, isArtistLiked, isArtistThumbed, getLikedVideoIds } from "@/lib/subscription";
 import LikeButton from "@/components/LikeButton";
 import VideoLikeButton from "@/components/VideoLikeButton";
 import { getArtistBySlug } from "@/lib/talent";
 import { listArtistVideos } from "@/lib/videos";
+import { listReviews, getMyReview } from "@/lib/reviews";
 import ShareButton from "@/components/ShareButton";
+import ReviewForm from "@/components/ReviewForm";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/site";
 import EnquiryForm from "@/components/EnquiryForm";
@@ -51,12 +53,19 @@ export default async function ArtistPage({
   // Contacts are confidential: the hirer sends an enquiry, the artist chooses to
   // share their card back (seen in the hirer's dashboard). No phone on the page.
   // Fan these out in parallel — they're independent, so the page renders faster.
-  const [{ user }, liked, videos] = await Promise.all([
+  const [{ user }, liked, thumbed, videos, myReview] = await Promise.all([
     getAccess(),
     isArtistLiked(artist.id),
+    isArtistThumbed(artist.id),
     listArtistVideos(artist.id),
+    getMyReview(artist.id),
   ]);
-  const likedVideoIds = await getLikedVideoIds(videos.map((v) => v.id));
+  const [likedVideoIds, reviews] = await Promise.all([
+    getLikedVideoIds(videos.map((v) => v.id)),
+    listReviews(artist.id, user?.id),
+  ]);
+  // You can't review your own profile (RLS enforces it too) — hide the form.
+  const ownProfile = !!user && artist.ownerId === user.id;
 
   const base = SITE_URL;
   const coverAbs = artist.photoPath
@@ -141,6 +150,9 @@ export default async function ArtistPage({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
                   <Fact label="Rating" value={`★ ${artist.rating}`} />
                   <Fact label="Reviews" value={String(artist.reviews)} />
+                  {artist.experienceYears !== null && (
+                    <Fact label="Experience" value={`${artist.experienceYears} yr${artist.experienceYears === 1 ? "" : "s"}`} />
+                  )}
                   <Fact label="Gigs completed" value={String(artist.gigs)} />
                   <Fact label="Response rate" value={`${artist.responseRate}%`} />
                   <Fact label="Based in" value={artist.city} />
@@ -150,6 +162,7 @@ export default async function ArtistPage({
                 <div className="mt-6 flex flex-wrap gap-4">
                   <TagRow title="Languages" items={artist.languages} />
                   <TagRow title="Styles" items={artist.genres} />
+                  {artist.skills.length > 0 && <TagRow title="Skills" items={artist.skills} />}
                   {artist.tags.length > 0 && <TagRow title="Good for" items={artist.tags} />}
                 </div>
 
@@ -172,6 +185,64 @@ export default async function ArtistPage({
                     </div>
                   </div>
                 )}
+
+                {/* Reviews */}
+                <section id="reviews" className="mt-10 scroll-mt-24">
+                  <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-1">
+                    Reviews
+                    {artist.reviews > 0 && (
+                      <span className="text-[14px] font-medium text-[var(--ink-faint)] ml-2">
+                        ★ {artist.rating} · {artist.reviews} review{artist.reviews === 1 ? "" : "s"}
+                      </span>
+                    )}
+                  </h2>
+
+                  {reviews.length > 0 && (
+                    <div className="mt-4 flex flex-col gap-3">
+                      {reviews.map((r) => (
+                        <article key={r.id} className="bg-white border border-[var(--line)] rounded-xl p-4">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[13.5px] font-semibold text-[var(--ink)]">{r.authorName}</span>
+                            {r.mine && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--blue-dark)] bg-[var(--blue-soft)] px-2 py-0.5 rounded-full">
+                                Your review
+                              </span>
+                            )}
+                            <span className="text-[13px] text-[var(--gold)] tracking-tight" aria-label={`${r.rating} out of 5`}>
+                              {"★".repeat(r.rating)}<span className="text-[var(--line)]">{"★".repeat(5 - r.rating)}</span>
+                            </span>
+                            <time className="text-[11.5px] text-[var(--ink-faint)] ml-auto" dateTime={r.createdAt}>
+                              {new Date(r.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                            </time>
+                          </div>
+                          <p className="text-[13.5px] text-[var(--ink-dim)] leading-relaxed mt-1.5 whitespace-pre-line">{r.body}</p>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 bg-white border border-[var(--line)] rounded-xl p-5">
+                    {ownProfile ? (
+                      <p className="text-[13px] text-[var(--ink-faint)]">
+                        This is your profile — reviews come from hirers who&apos;ve worked with you.
+                      </p>
+                    ) : user ? (
+                      <>
+                        <p className="text-[13px] font-semibold text-[var(--ink)] mb-3">
+                          {myReview ? "Edit your review" : `Write a review for ${artist.name.split(" ")[0]}`}
+                        </p>
+                        <ReviewForm artistId={artist.id} slug={artist.slug} firstName={artist.name.split(" ")[0]} existing={myReview} />
+                      </>
+                    ) : (
+                      <p className="text-[13px] text-[var(--ink-dim)]">
+                        <Link href={`/signin?next=/artists/${artist.slug}`} className="font-semibold text-[var(--blue-dark)] hover:underline">
+                          Sign in
+                        </Link>{" "}
+                        to write a review for {artist.name.split(" ")[0]}.
+                      </p>
+                    )}
+                  </div>
+                </section>
               </div>
             </div>
 
@@ -210,7 +281,12 @@ export default async function ArtistPage({
                   className="flex-1 py-2 rounded-lg border border-[var(--line)] text-[13px] font-semibold text-[var(--ink)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all"
                 />
                 <LikeButton artistId={artist.id} initialCount={artist.likesCount} initialLiked={liked} size="lg" />
+                <LikeButton artistId={artist.id} initialCount={artist.thumbsCount} initialLiked={thumbed} size="lg" variant="thumb" />
               </div>
+
+              <a href="#reviews" className="block text-[12.5px] font-semibold text-[var(--blue-dark)] hover:underline mb-4">
+                {artist.reviews > 0 ? `Read ${artist.reviews} review${artist.reviews === 1 ? "" : "s"}` : "Write the first review"} →
+              </a>
 
               <div className="flex items-center gap-2 text-[12.5px] font-semibold text-[var(--blue-dark)] bg-[var(--blue-soft)] border border-[var(--blue-mid)] rounded-lg px-3 py-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-500" />

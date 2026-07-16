@@ -22,6 +22,24 @@ export async function setLike(artistId: string, liked: boolean): Promise<{ ok: b
   return { ok: true, signedIn: true };
 }
 
+// Thumbs-up / un-thumb an artist. Separate from setLike: heart = save/favourite,
+// thumb = upvote. Count kept by the artist_thumbs_count trigger (v22).
+export async function setThumb(artistId: string, thumbed: boolean): Promise<{ ok: boolean; signedIn: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, signedIn: false };
+
+  if (thumbed) {
+    const { error } = await supabase.from("artist_thumbs").insert({ user_id: user.id, artist_id: artistId });
+    if (error && error.code !== "23505") return { ok: false, signedIn: true };
+  } else {
+    await supabase.from("artist_thumbs").delete().eq("user_id", user.id).eq("artist_id", artistId);
+  }
+  return { ok: true, signedIn: true };
+}
+
 // Thumbs-up / un-thumb a video. Same deterministic pattern as setLike.
 export async function setVideoLike(videoId: string, liked: boolean): Promise<{ ok: boolean; signedIn: boolean }> {
   const supabase = await createClient();

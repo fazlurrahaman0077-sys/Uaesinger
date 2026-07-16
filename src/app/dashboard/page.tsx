@@ -127,10 +127,18 @@ async function HirerView({ userId }: { userId: string }) {
                 <div key={a.id} className="bg-white border border-[var(--line)] rounded-xl p-4">
                   <Link href={`/artists/${a.slug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">{a.name}</Link>
                   <p className="text-[12px] text-[var(--ink-faint)] mb-2">{categoryLabel(a.category_slug)} · {a.city}</p>
-                  <div className="text-[13px] text-[var(--ink-dim)] flex flex-col gap-0.5">
-                    {c?.phone && <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">{c.phone}</a>}
-                    {c?.whatsapp && <a href={`https://wa.me/${c.whatsapp.replace(/[^\d]/g, "")}`} className="hover:underline">WhatsApp: {c.whatsapp}</a>}
-                    {c?.email && <a href={`mailto:${c.email}`} className="hover:underline">{c.email}</a>}
+                  <div className="text-[13px] text-[var(--ink-dim)] flex flex-wrap items-center gap-2">
+                    {c?.phone && (
+                      <a href={`tel:${c.phone.replace(/\s/g, "")}`} className={callBtn}>
+                        <PhoneIcon /> Call {c.phone}
+                      </a>
+                    )}
+                    {c?.whatsapp && (
+                      <a href={`https://wa.me/${c.whatsapp.replace(/[^\d]/g, "")}`} target="_blank" rel="noopener noreferrer" className={contactBtn}>
+                        WhatsApp
+                      </a>
+                    )}
+                    {c?.email && <a href={`mailto:${c.email}`} className={contactBtn}>Email</a>}
                     {!c?.phone && !c?.email && !c?.whatsapp && <span className="text-[var(--ink-faint)]">No contact details on file.</span>}
                   </div>
                 </div>
@@ -160,11 +168,25 @@ async function HirerView({ userId }: { userId: string }) {
                   <StatusBadge status={e.status} />
                 </div>
                 {e.sharedCard && (e.sharedCard.phone || e.sharedCard.whatsapp || e.sharedCard.email) && (
-                  <div className="mt-2 pt-2 border-t border-[var(--line)] flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-green-700 w-full">✓ {e.artistName.split(" ")[0]} shared their card</span>
-                    {e.sharedCard.phone && <a href={`tel:${e.sharedCard.phone.replace(/\s/g, "")}`} className="font-semibold text-[var(--blue-dark)] hover:underline">{e.sharedCard.phone}</a>}
-                    {e.sharedCard.whatsapp && <a href={`https://wa.me/${e.sharedCard.whatsapp.replace(/[^\d]/g, "")}`} className="font-semibold text-[var(--blue-dark)] hover:underline">WhatsApp</a>}
-                    {e.sharedCard.email && <a href={`mailto:${e.sharedCard.email}`} className="font-semibold text-[var(--blue-dark)] hover:underline">{e.sharedCard.email}</a>}
+                  <div className="mt-2 pt-2 border-t border-[var(--line)]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-green-700">✓ {e.artistName.split(" ")[0]} shared their card</span>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {e.sharedCard.phone && (
+                        <a href={`tel:${e.sharedCard.phone.replace(/\s/g, "")}`} className={callBtn}>
+                          <PhoneIcon /> Call {e.sharedCard.phone}
+                        </a>
+                      )}
+                      {e.sharedCard.whatsapp && (
+                        <a href={`https://wa.me/${e.sharedCard.whatsapp.replace(/[^\d]/g, "")}`} target="_blank" rel="noopener noreferrer" className={contactBtn}>
+                          WhatsApp
+                        </a>
+                      )}
+                      {e.sharedCard.email && (
+                        <a href={`mailto:${e.sharedCard.email}`} className={contactBtn}>
+                          Email
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -414,6 +436,21 @@ function Empty({ children }: { children: React.ReactNode }) {
     <div className="bg-white border border-dashed border-[var(--line)] rounded-2xl px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">
       {children}
     </div>
+  );
+}
+
+// Contact buttons on a card the artist has consented to share (or an unlocked
+// contact). tel:/wa.me/mailto — the OS handles the rest.
+const callBtn =
+  "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--blue)] text-white text-[12.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all";
+const contactBtn =
+  "inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[var(--line)] text-[12.5px] font-semibold text-[var(--ink-dim)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all";
+
+function PhoneIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
   );
 }
 

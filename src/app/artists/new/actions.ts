@@ -60,6 +60,8 @@ export async function createArtist(formData: FormData) {
     gender: String(formData.get("gender") ?? "").trim() || null,
     nationality: String(formData.get("nationality") ?? "").trim() || null,
     tags: list(formData.get("tags")),
+    skills: list(formData.get("skills")),
+    experience_years: Number(formData.get("experience_years")) || null,
     availability: String(formData.get("availability") ?? "Available now"),
     price_min: Number(formData.get("price_min")) || null,
     price_max: Number(formData.get("price_max")) || null,
@@ -110,8 +112,9 @@ export async function createArtist(formData: FormData) {
     }
   }
 
-  // Mark the account as an artist.
-  await supabase.from("profiles").update({ role: "artist" }).eq("id", user.id);
+  // Mark the account as an artist — but never demote an admin, who'd otherwise
+  // silently lose /admin access by listing themselves (role is a single column).
+  await supabase.from("profiles").update({ role: "artist" }).eq("id", user.id).neq("role", "admin");
 
   redirect(`/artists/${slug}`);
 }

@@ -66,3 +66,50 @@ export async function requestBooking(
   if (error) return { ok: false, error: "Couldn't send — please try again." };
   return { ok: true };
 }
+
+// Write (or rewrite) a review. One per user per artist — upsert on that unique
+// pair so editing works without a separate update path. RLS blocks reviewing an
+// artist you own; the artists.rating/reviews columns are kept by the v22 trigger.
+export async function submitReview(
+  _prev: { ok: boolean; error?: string } | null,
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string }> {
+  const artistId = String(formData.get("artistId") ?? "");
+  const slug = String(formData.get("slug") ?? "");
+  const rating = Number(formData.get("rating"));
+  const body = String(formData.get("body") ?? "").trim();
+
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return { ok: false, error: "Pick a rating from 1 to 5 stars." };
+  if (body.length === 0) return { ok: false, error: "Please write a few words about your experience." };
+  if (body.length > 2000) return { ok: false, error: "Review is too long (2000 characters max)." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Please sign in to leave a review." };
+
+  // Identity comes from the session, never the form — a typed name is spoofable,
+  // and full_name isn't unique (two live accounts are both "Micah"). The email is
+  // the identity; full_name is only a display label.
+  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+  const displayName = profile?.full_name?.trim() || (user.email ?? "").split("@")[0] || "Anonymous";
+
+  const { error } = await supabase.from("artist_reviews").upsert(
+    {
+      artist_id: artistId,
+      user_id: user.id,
+      author_name: displayName,
+      author_email: user.email,
+      rating,
+      body,
+    },
+    { onConflict: "user_id,artist_id" },
+  );
+  // RLS rejects self-reviews (owner_id = auth.uid()) with a policy violation.
+  if (error) {
+    return { ok: false, error: error.code === "42501" ? "You can't review your own profile." : "Couldn't post your review — please try again." };
+  }
+  revalidatePath(`/artists/${slug}`);
+  return { ok: true };
+}
