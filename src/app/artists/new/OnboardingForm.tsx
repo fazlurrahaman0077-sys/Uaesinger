@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CATEGORIES, SUBCATEGORIES, EMIRATES, GENDERS, NATIONALITIES, categoryLabel, priceRange, initials } from "@/lib/artists";
+import { CATEGORIES, SUBCATEGORIES, EMIRATES, GENDERS, NATIONALITIES, categoryLabel, priceRange, initials, MAX_VIDEOS, MAX_PHOTOS } from "@/lib/artists";
 import Select from "@/components/Select";
 import { uploadVideoToCloudinary } from "@/lib/cloudinary";
 import { createArtist } from "./actions";
@@ -51,12 +51,12 @@ export default function OnboardingForm({ userId }: { userId: string }) {
 
   function pickPhotos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).filter((x) => x.type.startsWith("image/"));
-    setPhotos((p) => [...p, ...files.map((file) => ({ file, preview: URL.createObjectURL(file) }))]);
+    setPhotos((p) => [...p, ...files.map((file) => ({ file, preview: URL.createObjectURL(file) }))].slice(0, MAX_PHOTOS));
     e.target.value = "";
   }
   function pickVideos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).filter((x) => x.type.startsWith("video/"));
-    setVideos((p) => [...p, ...files.map((file) => ({ file, title: file.name.replace(/\.[^.]+$/, ""), preview: URL.createObjectURL(file) }))]);
+    setVideos((p) => [...p, ...files.map((file) => ({ file, title: file.name.replace(/\.[^.]+$/, ""), preview: URL.createObjectURL(file) }))].slice(0, MAX_VIDEOS));
     e.target.value = "";
   }
 
@@ -112,7 +112,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12 items-start">
       {/* ---- Form ---- */}
       <form onSubmit={onSubmit} className="order-2 lg:order-1 flex flex-col gap-6">
-        <Section eyebrow="01" title="Your photos" hint="Add a few great shots — the first is your cover. Skip it and we'll use a stage image for your category.">
+        <Section eyebrow="01" title="Your photos" hint={`Add up to ${MAX_PHOTOS} great shots — the first is your cover. Skip it and we'll use a stage image for your category.`}>
           <div className="flex flex-wrap gap-3">
             {photos.map((ph, i) => (
               <span key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[var(--line)] group">
@@ -122,11 +122,13 @@ export default function OnboardingForm({ userId }: { userId: string }) {
                 <button type="button" onClick={() => setPhotos((p) => p.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/55 text-white text-[11px] leading-none">✕</button>
               </span>
             ))}
-            <label className="w-20 h-20 rounded-2xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-[var(--blue)] transition-colors">
-              <span className="text-[20px]">📷</span>
-              <span className="text-[10px] font-semibold text-[var(--blue-dark)]">Add</span>
-              <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={pickPhotos} className="hidden" />
-            </label>
+            {photos.length < MAX_PHOTOS && (
+              <label className="w-20 h-20 rounded-2xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] flex flex-col items-center justify-center gap-0.5 cursor-pointer hover:border-[var(--blue)] transition-colors">
+                <span className="text-[20px]">📷</span>
+                <span className="text-[10px] font-semibold text-[var(--blue-dark)]">Add</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={pickPhotos} className="hidden" />
+              </label>
+            )}
           </div>
         </Section>
 
@@ -200,13 +202,15 @@ export default function OnboardingForm({ userId }: { userId: string }) {
           </Field>
         </Section>
 
-        <Section eyebrow="04" title="Show your work" hint="Upload performance clips — the fastest way to get booked.">
-          <label className="flex flex-col items-center justify-center gap-1.5 py-7 rounded-xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] cursor-pointer hover:border-[var(--blue)] transition-colors">
-            <span className="text-[24px]">🎬</span>
-            <span className="text-[13px] font-semibold text-[var(--blue-dark)]">Add videos</span>
-            <span className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 500 MB each</span>
-            <input type="file" accept="video/mp4,video/webm,video/quicktime" multiple onChange={pickVideos} className="hidden" />
-          </label>
+        <Section eyebrow="04" title="Show your work" hint={`Upload up to ${MAX_VIDEOS} performance clips — the fastest way to get booked.`}>
+          {videos.length < MAX_VIDEOS && (
+            <label className="flex flex-col items-center justify-center gap-1.5 py-7 rounded-xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] cursor-pointer hover:border-[var(--blue)] transition-colors">
+              <span className="text-[24px]">🎬</span>
+              <span className="text-[13px] font-semibold text-[var(--blue-dark)]">Add videos</span>
+              <span className="text-[11px] text-[var(--ink-faint)]">MP4, WebM or MOV · up to 500 MB each</span>
+              <input type="file" accept="video/mp4,video/webm,video/quicktime" multiple onChange={pickVideos} className="hidden" />
+            </label>
+          )}
           {videos.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {videos.map((v, i) => (

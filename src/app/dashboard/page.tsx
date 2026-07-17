@@ -7,7 +7,7 @@ import Avatar from "@/components/Avatar";
 import { createClient } from "@/lib/supabase/server";
 import { getAccess } from "@/lib/subscription";
 import { getPlan } from "@/lib/plans";
-import { categoryLabel, priceRange } from "@/lib/artists";
+import { categoryLabel, priceRange, MAX_VIDEOS } from "@/lib/artists";
 import { listMyEnquiries, listIncomingEnquiries, BOOKING_STATUSES, type Enquiry } from "@/lib/bookings";
 import { publicVideoUrl } from "@/lib/videos";
 import { updateBookingStatus, updateListing, deleteListing, shareCard } from "./actions";
@@ -382,10 +382,16 @@ async function CreatorView({ userId }: { userId: string }) {
             {/* Videos / reels */}
             <div className="mt-6">
               <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-3">
-                Videos {vids.length > 0 && <span className="text-[var(--blue-dark)]">({vids.length})</span>}
+                Videos <span className="text-[var(--blue-dark)]">({vids.length}/{MAX_VIDEOS})</span>
               </p>
               <div className="grid sm:grid-cols-[1fr_1fr] gap-4 items-start">
-                <VideoUploader artistId={a.id} />
+                {vids.length < MAX_VIDEOS ? (
+                  <VideoUploader artistId={a.id} />
+                ) : (
+                  <p className="text-[12.5px] text-[var(--ink-faint)] bg-[var(--bg2)] border border-dashed border-[var(--line)] rounded-xl p-4">
+                    You&apos;ve reached the {MAX_VIDEOS}-video limit. Delete one to add another.
+                  </p>
+                )}
                 {vids.length > 0 && (
                   <div className="grid grid-cols-2 gap-3">
                     {vids.map((v) => (

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { MAX_VIDEOS } from "@/lib/artists";
 
 // Record a video the client just uploaded to storage. RLS (artist_videos_owner_write
 // + the storage insert policy) guarantees the caller owns the artist and the file.
@@ -18,6 +19,13 @@ export async function addVideo(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim() || null;
   // Only accept our own Cloudinary CDN urls (never a creator's external link).
   if (!artistId || !url || !url.includes("res.cloudinary.com")) redirect("/dashboard");
+
+  // Enforce the per-creator video cap so profiles stay light (owner-scoped by RLS).
+  const { count } = await supabase
+    .from("artist_videos")
+    .select("id", { count: "exact", head: true })
+    .eq("artist_id", artistId);
+  if ((count ?? 0) >= MAX_VIDEOS) redirect("/dashboard");
 
   await supabase.from("artist_videos").insert({
     artist_id: artistId,
