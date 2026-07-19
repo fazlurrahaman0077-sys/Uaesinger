@@ -1,6 +1,6 @@
 // Self-check: `node src/lib/validate.check.ts` (no test framework needed).
 import assert from "node:assert";
-import { uaePhone, hasContactInfo } from "./validate.ts";
+import { uaePhone, hasContactInfo, resolvePhone } from "./validate.ts";
 
 // --- UAE numbers, every form a creator types them in ---
 assert.equal(uaePhone("+971 50 123 4567"), "+971501234567");
@@ -31,5 +31,20 @@ assert.equal(hasContactInfo("Wedding singer with 12 years on UAE stages."), fals
 assert.equal(hasContactInfo("500 shows since 2015, Dubai based."), false);
 assert.equal(hasContactInfo("Sets run 2-3 hours, 45 min each."), false);
 assert.equal(hasContactInfo(null, undefined, ""), false);
+
+// --- existing numbers must not lock their owner out of editing ---
+const LEGACY = "+919639006719"; // a real live row, saved before the UAE rule
+// Unchanged: passes through untouched, so the rest of the profile stays editable.
+assert.deepEqual(resolvePhone(LEGACY, LEGACY), { value: LEGACY, invalid: false });
+assert.deepEqual(resolvePhone(` ${LEGACY} `, LEGACY), { value: LEGACY, invalid: false });
+// Changed to another foreign number: rejected.
+assert.equal(resolvePhone("+91 98765 43210", LEGACY).invalid, true);
+// Changed to a UAE number: accepted and normalised.
+assert.deepEqual(resolvePhone("050 123 4567", LEGACY), { value: "+971501234567", invalid: false });
+// Cleared: allowed, stores null.
+assert.deepEqual(resolvePhone("", LEGACY), { value: null, invalid: false });
+// No stored value (new contact row): no pass, must be UAE.
+assert.equal(resolvePhone(LEGACY, null).invalid, true);
+assert.deepEqual(resolvePhone("0501234567", null), { value: "+971501234567", invalid: false });
 
 console.log("validate.ts OK");

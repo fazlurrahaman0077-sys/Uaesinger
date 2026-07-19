@@ -42,6 +42,26 @@ export function hasContactInfo(...parts: (string | null | undefined)[]): boolean
   return CONTACT_PATTERNS.some((re) => re.test(text));
 }
 
+/**
+ * Resolve a submitted number against what is already stored.
+ *
+ * Numbers saved before the UAE-only rule existed still fail uaePhone(), and
+ * validating them on every save locked their owner out of editing anything else
+ * on their profile — they cannot comply if they have no UAE number. So an
+ * unchanged number is left alone and only a genuine change has to pass. New
+ * listings go through uaePhone() directly and get no such pass.
+ */
+export function resolvePhone(
+  raw: string,
+  current: string | null,
+): { value: string | null; invalid: boolean } {
+  const trimmed = raw.trim();
+  if (!trimmed) return { value: null, invalid: false };
+  if (current && trimmed === current.trim()) return { value: current, invalid: false };
+  const normalised = uaePhone(trimmed);
+  return { value: normalised, invalid: normalised === null };
+}
+
 export const CONTACT_IN_TEXT_MESSAGE =
   "Remove contact details from your profile text — no phone numbers, emails, links or social handles. Clients reach you through the enquiry form, and you share your card when you choose.";
 

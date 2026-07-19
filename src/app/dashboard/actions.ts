@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { BOOKING_STATUSES } from "@/lib/bookings";
-import { uaePhone, hasContactInfo } from "@/lib/validate";
+import { hasContactInfo, resolvePhone } from "@/lib/validate";
 
 function list(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -96,12 +96,22 @@ export async function updateListing(formData: FormData) {
   const phoneRaw = String(formData.get("phone") ?? "").trim();
   const whatsappRaw = String(formData.get("whatsapp") ?? "").trim();
 
-  // UAE numbers only — this marketplace is UAE-only talent.
-  const phone = phoneRaw ? uaePhone(phoneRaw) : null;
-  const whatsapp = whatsappRaw ? uaePhone(whatsappRaw) : null;
-  if ((phoneRaw && !phone) || (whatsappRaw && !whatsapp)) {
+  // UAE numbers only — but a number saved before that rule must not block the
+  // owner from editing the rest of their listing, so only a real change is
+  // validated (see resolvePhone).
+  const { data: current } = await supabase
+    .from("artist_contacts")
+    .select("phone, whatsapp")
+    .eq("artist_id", artistId)
+    .maybeSingle();
+
+  const phoneResult = resolvePhone(phoneRaw, current?.phone ?? null);
+  const whatsappResult = resolvePhone(whatsappRaw, current?.whatsapp ?? null);
+  if (phoneResult.invalid || whatsappResult.invalid) {
     redirect("/dashboard?error=phone");
   }
+  const phone = phoneResult.value;
+  const whatsapp = whatsappResult.value;
 
   // Contact details are the paid product — they must not leak into public copy.
   if (hasContactInfo(tagline, bio, String(formData.get("genres") ?? ""), String(formData.get("languages") ?? ""))) {

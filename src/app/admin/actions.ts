@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin";
-import { uaePhone, hasContactInfo } from "@/lib/validate";
+import { hasContactInfo, resolvePhone } from "@/lib/validate";
 
 function slugify(s: string): string {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70);
@@ -76,9 +76,19 @@ export async function adminUpdateArtist(formData: FormData) {
   const whatsappRaw = String(formData.get("whatsapp") ?? "").trim();
   if (!id || !name) redirect(`${back}?error=missing`);
 
-  const phone = phoneRaw ? uaePhone(phoneRaw) : null;
-  const whatsapp = whatsappRaw ? uaePhone(whatsappRaw) : null;
-  if ((phoneRaw && !phone) || (whatsappRaw && !whatsapp)) redirect(`${back}?error=phone`);
+  // Same grandfathering as the creator's own editor — an admin cleaning up a
+  // legacy listing shouldn't be blocked by a number that predates the rule.
+  const { data: currentContact } = await supabase
+    .from("artist_contacts")
+    .select("phone, whatsapp")
+    .eq("artist_id", id)
+    .maybeSingle();
+
+  const phoneResult = resolvePhone(phoneRaw, currentContact?.phone ?? null);
+  const whatsappResult = resolvePhone(whatsappRaw, currentContact?.whatsapp ?? null);
+  if (phoneResult.invalid || whatsappResult.invalid) redirect(`${back}?error=phone`);
+  const phone = phoneResult.value;
+  const whatsapp = whatsappResult.value;
 
   if (hasContactInfo(name, tagline, bio, String(formData.get("tags") ?? ""), String(formData.get("skills") ?? ""))) {
     redirect(`${back}?error=leak`);
