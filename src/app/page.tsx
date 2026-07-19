@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
@@ -10,6 +11,11 @@ import FAQ from "@/components/FAQ";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
+
+// Self-referencing canonical. Declared here rather than in the root layout,
+// where it would point every page at the homepage. Artist and blog pages set
+// their own; this is the page Google actually has indexed.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 // ISR — cache the homepage; regenerate at most every 5 min. Served in ~50ms.
 export const revalidate = 300;
