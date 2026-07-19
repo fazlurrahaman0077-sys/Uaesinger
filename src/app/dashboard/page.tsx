@@ -10,6 +10,7 @@ import { getPlan } from "@/lib/plans";
 import { categoryLabel, priceRange, MAX_VIDEOS } from "@/lib/artists";
 import { listMyEnquiries, listIncomingEnquiries, BOOKING_STATUSES, type Enquiry } from "@/lib/bookings";
 import { publicVideoUrl } from "@/lib/videos";
+import { PHONE_MESSAGE, CONTACT_IN_TEXT_MESSAGE } from "@/lib/validate";
 import { updateBookingStatus, updateListing, deleteListing, shareCard } from "./actions";
 import { removeVideo } from "./video-actions";
 import VideoUploader from "@/components/VideoUploader";
@@ -29,9 +30,9 @@ const statusStyle: Record<string, string> = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  const { saved } = await searchParams;
+  const { saved, error } = await searchParams;
   const supabase = await createClient();
   const { user } = await getAccess();
   if (!user) redirect("/signin?next=/dashboard");
@@ -66,6 +67,12 @@ export default async function DashboardPage({
           {saved && (
             <p className="mb-6 text-[13px] text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5">
               Listing saved.
+            </p>
+          )}
+
+          {error && (
+            <p className="mb-6 text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
+              Nothing was saved. {error === "phone" ? PHONE_MESSAGE : CONTACT_IN_TEXT_MESSAGE}
             </p>
           )}
 

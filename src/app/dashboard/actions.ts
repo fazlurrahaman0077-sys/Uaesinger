@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { BOOKING_STATUSES } from "@/lib/bookings";
+import { uaePhone, hasContactInfo } from "@/lib/validate";
 
 function list(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -76,12 +77,28 @@ export async function deleteListing(formData: FormData) {
 export async function updateListing(formData: FormData) {
   const { supabase } = await requireUser();
   const artistId = String(formData.get("artistId") ?? "");
+  const tagline = String(formData.get("tagline") ?? "").trim();
+  const bio = String(formData.get("bio") ?? "").trim();
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
+  const whatsappRaw = String(formData.get("whatsapp") ?? "").trim();
+
+  // UAE numbers only — this marketplace is UAE-only talent.
+  const phone = phoneRaw ? uaePhone(phoneRaw) : null;
+  const whatsapp = whatsappRaw ? uaePhone(whatsappRaw) : null;
+  if ((phoneRaw && !phone) || (whatsappRaw && !whatsapp)) {
+    redirect("/dashboard?error=phone");
+  }
+
+  // Contact details are the paid product — they must not leak into public copy.
+  if (hasContactInfo(tagline, bio, String(formData.get("genres") ?? ""), String(formData.get("languages") ?? ""))) {
+    redirect("/dashboard?error=leak");
+  }
 
   await supabase
     .from("artists")
     .update({
-      tagline: String(formData.get("tagline") ?? "").trim() || null,
-      bio: String(formData.get("bio") ?? "").trim() || null,
+      tagline: tagline || null,
+      bio: bio || null,
       languages: list(formData.get("languages")),
       genres: list(formData.get("genres")),
       availability: String(formData.get("availability") ?? "Available now"),
@@ -94,8 +111,8 @@ export async function updateListing(formData: FormData) {
   // Upsert gated contact (row may not exist for older listings).
   await supabase.from("artist_contacts").upsert({
     artist_id: artistId,
-    phone: String(formData.get("phone") ?? "").trim() || null,
-    whatsapp: String(formData.get("whatsapp") ?? "").trim() || null,
+    phone,
+    whatsapp,
     email: String(formData.get("email") ?? "").trim() || null,
   });
 

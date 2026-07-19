@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { MAX_VIDEOS } from "@/lib/artists";
+import { hasContactInfo } from "@/lib/validate";
 
 // Record a video the client just uploaded to storage. RLS (artist_videos_owner_write
 // + the storage insert policy) guarantees the caller owns the artist and the file.
@@ -19,6 +20,8 @@ export async function addVideo(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim() || null;
   // Only accept our own Cloudinary CDN urls (never a creator's external link).
   if (!artistId || !url || !url.includes("res.cloudinary.com")) redirect("/dashboard");
+  // A video title is public copy too — no smuggling a handle into it.
+  if (hasContactInfo(title)) redirect("/dashboard?error=leak");
 
   // Enforce the per-creator video cap so profiles stay light (owner-scoped by RLS).
   const { count } = await supabase

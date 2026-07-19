@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CATEGORIES } from "@/lib/artists";
+import { uaePhone, hasContactInfo } from "@/lib/validate";
 
 function slugify(s: string): string {
   return s
@@ -30,16 +31,30 @@ export async function createArtist(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const category = String(formData.get("category") ?? "");
   const city = String(formData.get("city") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const whatsapp = String(formData.get("whatsapp") ?? "").trim();
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
+  const whatsappRaw = String(formData.get("whatsapp") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
+  const tagline = String(formData.get("tagline") ?? "").trim();
+  const bio = String(formData.get("bio") ?? "").trim();
 
   // Trust-boundary validation — basics + at least one contact method.
   if (!name || !city || !CATEGORIES.some((c) => c.slug === category)) {
     redirect("/artists/new?error=missing");
   }
-  if (!phone && !whatsapp && !email) {
+  if (!phoneRaw && !whatsappRaw && !email) {
     redirect("/artists/new?error=contact");
+  }
+
+  // UAE numbers only — this marketplace is UAE-only talent.
+  const phone = phoneRaw ? uaePhone(phoneRaw) : null;
+  const whatsapp = whatsappRaw ? uaePhone(whatsappRaw) : null;
+  if ((phoneRaw && !phone) || (whatsappRaw && !whatsapp)) {
+    redirect("/artists/new?error=phone");
+  }
+
+  // Contact details are the paid product — they must not leak into public copy.
+  if (hasContactInfo(name, tagline, bio, String(formData.get("tags") ?? ""), String(formData.get("skills") ?? ""))) {
+    redirect("/artists/new?error=leak");
   }
 
   const base = slugify(name) || "artist";
@@ -52,8 +67,8 @@ export async function createArtist(formData: FormData) {
     category_slug: category,
     owner_id: user.id,
     city,
-    tagline: String(formData.get("tagline") ?? "").trim() || null,
-    bio: String(formData.get("bio") ?? "").trim() || null,
+    tagline: tagline || null,
+    bio: bio || null,
     languages: list(formData.get("languages")),
     genres: list(formData.get("genres")),
     subcategory: String(formData.get("subcategory") ?? "").trim() || null,
@@ -80,9 +95,9 @@ export async function createArtist(formData: FormData) {
   if (created) {
     await supabase.from("artist_contacts").insert({
       artist_id: created.id,
-      phone: String(formData.get("phone") ?? "").trim() || null,
-      email: String(formData.get("email") ?? "").trim() || null,
-      whatsapp: String(formData.get("whatsapp") ?? "").trim() || null,
+      phone,
+      email: email || null,
+      whatsapp,
     });
 
     // Videos were uploaded to storage client-side; attach their metadata rows.
