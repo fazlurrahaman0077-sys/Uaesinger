@@ -43,6 +43,7 @@ export async function toggleArtist(formData: FormData) {
   await supabase.from("artists").update({ is_published: publish }).eq("id", id);
   revalidatePath("/admin");
   revalidatePath("/artists");
+  redirect("/admin?saved=artist");
 }
 
 export async function deleteArtist(formData: FormData) {
@@ -50,6 +51,7 @@ export async function deleteArtist(formData: FormData) {
   await supabase.from("artists").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin");
   revalidatePath("/artists");
+  redirect("/admin?saved=deleted");
 }
 
 function list(v: FormDataEntryValue | null): string[] {
@@ -175,7 +177,10 @@ export async function deleteUser(formData: FormData) {
 export async function deleteMessage(formData: FormData) {
   const { supabase } = await requireAdmin();
   await supabase.from("contact_messages").delete().eq("id", String(formData.get("id")));
+  // Redirect, don't just revalidate — without it the row stays on screen after a
+  // successful delete and the button reads as broken.
   revalidatePath("/admin");
+  redirect("/admin?saved=message");
 }
 
 export async function createPost(formData: FormData) {
@@ -217,6 +222,7 @@ export async function togglePost(formData: FormData) {
     .eq("id", String(formData.get("id")));
   revalidatePath("/admin");
   revalidatePath("/blog");
+  redirect("/admin?saved=post");
 }
 
 export async function deletePost(formData: FormData) {
@@ -224,4 +230,5 @@ export async function deletePost(formData: FormData) {
   await supabase.from("posts").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin");
   revalidatePath("/blog");
+  redirect("/admin?saved=deleted");
 }

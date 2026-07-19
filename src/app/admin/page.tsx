@@ -11,6 +11,8 @@ const SAVED_MESSAGE: Record<string, string> = {
   user: "User updated.",
   wiped: "That user's content was removed.",
   post: "Post saved.",
+  message: "Message deleted.",
+  deleted: "Deleted.",
 };
 
 const ERROR_MESSAGE: Record<string, string> = {
