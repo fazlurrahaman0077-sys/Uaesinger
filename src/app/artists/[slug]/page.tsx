@@ -296,7 +296,7 @@ export default async function ArtistPage({
 
               <div className="border border-[var(--line)] rounded-lg p-4 bg-[var(--bg2)]">
                 {user ? (
-                  <EnquiryForm artistId={artist.id} firstName={artist.name.split(" ")[0]} />
+                  <EnquiryForm artistId={artist.id} firstName={artist.name.split(" ")[0]} slug={artist.slug} />
                 ) : (
                   <>
                     <p className="text-[12.5px] text-[var(--ink-dim)] mb-3">

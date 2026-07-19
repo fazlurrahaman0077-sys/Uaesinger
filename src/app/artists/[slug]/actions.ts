@@ -41,20 +41,34 @@ export async function revealContact(formData: FormData) {
   redirect(`/artists/${slug}`);
 }
 
-// Send a booking enquiry to the artist. Lands in the creator's dashboard inbox.
-// Send a booking enquiry. Returns a result (no redirect / no page revalidation)
-// so the client can show success inline — no heavy profile re-render, instant.
-export async function requestBooking(
-  _prev: { ok: boolean; error?: string } | null,
-  formData: FormData,
-): Promise<{ ok: boolean; error?: string }> {
-  const artistId = String(formData.get("artistId") ?? "");
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Please sign in to send an enquiry." };
+export type Card = { phone: string | null; whatsapp: string | null; email: string | null };
 
+// Send a booking enquiry AND reveal the artist's contact card in the same step —
+// the hirer no longer waits for the creator to tap "Send my card". Returns a
+// result (no redirect / no page revalidation) so the client renders the card
+// inline, instantly.
+//
+// The reveal reuses the existing unlock machinery rather than a new path: writing
+// a contact_unlocks row is what makes artist_contacts readable to this user
+// (policy artist_contacts_select_unlocked), and it is also what surfaces the
+// artist under "Unlocked contacts" in their dashboard. Unique (user_id,
+// artist_id) makes it idempotent, so enquiring twice costs one credit.
+export async function requestBooking(
+  _prev: { ok: boolean; error?: string; card?: Card } | null,
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string; card?: Card }> {
+  const artistId = String(formData.get("artistId") ?? "");
+  const slug = String(formData.get("slug") ?? "");
+
+  const { user, plan, quota, unlocksUsed } = await getAccess();
+  if (!user) return { ok: false, error: "Please sign in to send an enquiry." };
+  // The contact card is the paid product, so the same gate as revealContact
+  // applies. FREE_MODE keeps it free+unlimited until that flag is flipped.
+  if (!FREE_MODE && !plan) {
+    return { ok: false, error: "Subscribe to send an enquiry and get contact details." };
+  }
+
+  const supabase = await createClient();
   const { error } = await supabase.from("bookings").insert({
     artist_id: artistId,
     user_id: user.id,
@@ -64,7 +78,33 @@ export async function requestBooking(
     hirer_phone: String(formData.get("hirer_phone") ?? "").trim() || null,
   });
   if (error) return { ok: false, error: "Couldn't send — please try again." };
-  return { ok: true };
+
+  const { data: existing } = await supabase
+    .from("contact_unlocks")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("artist_id", artistId)
+    .maybeSingle();
+
+  if (!existing) {
+    // Out of credits: the enquiry still reached the creator, they just don't get
+    // the card with it. Say so rather than failing the whole send.
+    if (!FREE_MODE && quota !== null && unlocksUsed >= quota) {
+      return { ok: true, error: "Enquiry sent. You're out of contact credits this month — upgrade to see their details." };
+    }
+    const writer = hasAdmin() ? createAdminClient() : supabase;
+    await writer.from("contact_unlocks").insert({ user_id: user.id, artist_id: artistId });
+  }
+
+  // Readable now that the unlock row exists.
+  const { data: card } = await supabase
+    .from("artist_contacts")
+    .select("phone, whatsapp, email")
+    .eq("artist_id", artistId)
+    .maybeSingle();
+
+  if (slug) revalidatePath(`/artists/${slug}`);
+  return { ok: true, card: card ?? undefined };
 }
 
 // Write (or rewrite) a review. One per user per artist — upsert on that unique
