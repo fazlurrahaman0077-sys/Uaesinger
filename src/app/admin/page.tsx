@@ -2,12 +2,29 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { requireAdmin } from "@/lib/admin";
-import { toggleArtist, deleteArtist, togglePost, deletePost } from "./actions";
+import { toggleArtist, deleteArtist, togglePost, deletePost, deleteUser, deleteUserContent, deleteMessage, adminUpdateUser } from "./actions";
 
 export const metadata: Metadata = { title: "Admin | UAESinger" };
 
-export default async function AdminPage() {
-  const { supabase } = await requireAdmin();
+const SAVED_MESSAGE: Record<string, string> = {
+  artist: "Listing updated.",
+  user: "User updated.",
+  wiped: "That user's content was removed.",
+  post: "Post saved.",
+};
+
+const ERROR_MESSAGE: Record<string, string> = {
+  self: "You can't delete or demote your own admin account.",
+  user: "That user could not be updated.",
+};
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string; error?: string }>;
+}) {
+  const { supabase, user: me } = await requireAdmin();
+  const { saved, error } = await searchParams;
 
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 6 * 864e5).toISOString().slice(0, 10);
@@ -23,6 +40,7 @@ export default async function AdminPage() {
     { data: payments },
     { data: completedPay },
     { data: messages },
+    { data: profiles },
   ] = await Promise.all([
     supabase.from("artists").select("id, slug, name, category_slug, city, is_published, created_at").order("created_at", { ascending: false }),
     supabase.from("posts").select("id, slug, title, category, published, created_at").order("created_at", { ascending: false }),
@@ -34,6 +52,8 @@ export default async function AdminPage() {
     supabase.from("payments").select("id, user_email, plan, amount_aed, status, created_at").order("created_at", { ascending: false }).limit(50),
     supabase.from("payments").select("amount_aed").eq("status", "completed"),
     supabase.from("contact_messages").select("id, name, email, subject, message, created_at").order("created_at", { ascending: false }).limit(50),
+    // Readable thanks to profiles_admin_select; email is backfilled by v24.
+    supabase.from("profiles").select("id, email, full_name, role, created_at").order("created_at", { ascending: false }),
   ]);
 
   // visitor_id is SHA-256(ip:day:...) — salted with the day, so the same IP gets a
@@ -66,6 +86,17 @@ export default async function AdminPage() {
             </span>
           </div>
 
+          {saved && SAVED_MESSAGE[saved] && (
+            <p className="mb-6 text-[13px] text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5">
+              {SAVED_MESSAGE[saved]}
+            </p>
+          )}
+          {error && (
+            <p className="mb-6 text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
+              {ERROR_MESSAGE[error] ?? "That action didn't complete."}
+            </p>
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
             {stats.map((s) => (
@@ -75,6 +106,69 @@ export default async function AdminPage() {
               </div>
             ))}
           </div>
+
+          {/* Users */}
+          <section className="mb-12">
+            <h2 className="font-display text-[20px] font-semibold text-[var(--ink)] mb-4">
+              Users <span className="text-[13px] font-normal text-[var(--ink-faint)]">({(profiles ?? []).length})</span>
+            </h2>
+            <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden">
+              {(profiles ?? []).length === 0 ? (
+                <p className="px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">No users yet.</p>
+              ) : (
+                <div className="divide-y divide-[var(--line)]">
+                  {profiles!.map((u) => (
+                    <div key={u.id} className="px-5 py-3 text-[13px] flex flex-wrap items-center gap-3">
+                      {/* Name + role are editable inline; email comes from auth and is read-only. */}
+                      <form action={adminUpdateUser} className="flex items-center gap-2 flex-1 min-w-[280px]">
+                        <input type="hidden" name="userId" value={u.id} />
+                        <input
+                          name="full_name"
+                          defaultValue={u.full_name ?? ""}
+                          placeholder="No name"
+                          className="w-[150px] px-2.5 py-1.5 rounded-lg border border-[var(--line)] text-[13px] outline-none focus:border-[var(--blue)] bg-white"
+                        />
+                        <select
+                          name="role"
+                          defaultValue={u.role}
+                          className="px-2.5 py-1.5 rounded-lg border border-[var(--line)] text-[12.5px] bg-white"
+                        >
+                          <option value="hirer">hirer</option>
+                          <option value="artist">artist</option>
+                          <option value="admin">admin</option>
+                        </select>
+                        <button className={btn}>Save</button>
+                      </form>
+                      <a href={`mailto:${u.email}`} className="text-[12px] text-[var(--blue-dark)] hover:underline truncate max-w-[240px]">
+                        {u.email ?? "no email"}
+                      </a>
+                      <span className="text-[11px] text-[var(--ink-faint)] hidden sm:inline">
+                        {new Date(u.created_at).toLocaleDateString()}
+                      </span>
+                      {u.id === me.id ? (
+                        <span className="text-[11px] font-semibold text-[var(--ink-faint)] px-2">that&apos;s you</span>
+                      ) : (
+                        <>
+                          <form action={deleteUserContent}>
+                            <input type="hidden" name="userId" value={u.id} />
+                            <button className={btn}>Wipe content</button>
+                          </form>
+                          <form action={deleteUser}>
+                            <input type="hidden" name="userId" value={u.id} />
+                            <button className={btnDanger}>Delete user</button>
+                          </form>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--ink-faint)] mt-2">
+              “Wipe content” removes their listings, reviews and enquiries. “Delete user” also removes their
+              profile — the login itself survives until a service-role key is configured.
+            </p>
+          </section>
 
           {/* Support messages — new-message notification */}
           <section className="mb-12">
@@ -98,6 +192,10 @@ export default async function AdminPage() {
                         <a href={`mailto:${m.email}`} className="text-[12px] text-[var(--blue-dark)] hover:underline">{m.email}</a>
                         {m.subject && <span className="text-[11px] text-[var(--ink-faint)]">· {m.subject}</span>}
                         <span className="text-[11px] text-[var(--ink-faint)] ml-auto">{new Date(m.created_at).toLocaleString()}</span>
+                        <form action={deleteMessage}>
+                          <input type="hidden" name="id" value={m.id} />
+                          <button className={btnDanger}>Delete</button>
+                        </form>
                       </div>
                       <p className="text-[13px] text-[var(--ink-dim)]">{m.message}</p>
                     </div>
@@ -167,6 +265,7 @@ export default async function AdminPage() {
                         {a.is_published ? "Live" : "Hidden"}
                       </span>
                       <Link href={`/artists/${a.slug}`} className={btn}>View</Link>
+                      <Link href={`/admin/artists/${a.id}/edit`} className={btn}>Edit</Link>
                       <form action={toggleArtist}>
                         <input type="hidden" name="id" value={a.id} />
                         <input type="hidden" name="publish" value={(!a.is_published).toString()} />

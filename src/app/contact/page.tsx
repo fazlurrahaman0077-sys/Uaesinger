@@ -55,9 +55,20 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 <form action={sendContactMessage} className="flex flex-col gap-4">
                   {error && (
                     <p className="text-[13px] text-[var(--coral)] bg-red-50 border border-red-100 rounded-lg px-4 py-2.5">
-                      Please fill in your name, email and message.
+                      {error === "rate"
+                        ? "You've sent a few messages already — please wait an hour before sending another, or email us directly."
+                        : "Please fill in your name, a valid email, and a message."}
                     </p>
                   )}
+                  {/* Honeypot — off-screen and skipped by tab/autofill; only bots fill it. */}
+                  <input
+                    type="text"
+                    name="company"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute w-px h-px -left-[9999px] opacity-0"
+                  />
                   <div className="grid sm:grid-cols-2 gap-4">
                     <Field name="name" label="Your name" required />
                     <Field name="email" label="Email" type="email" required />
