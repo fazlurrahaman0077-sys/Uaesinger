@@ -110,8 +110,10 @@ export default async function ArtistPage({
               {/* Video-only hero — artist photos are never shown (protects identity). */}
               {videos.length > 0 ? (
                 <figure className="rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
+                  {/* Portrait phone reels are the norm — object-contain letterboxes them
+                      whole instead of cropping to a middle slice (object-cover did). */}
                   <div className="relative aspect-[16/9] bg-black">
-                    <video src={videos[0].src} controls preload="metadata" playsInline className="absolute inset-0 w-full h-full object-cover" />
+                    <video src={videos[0].src} controls preload="metadata" playsInline className="absolute inset-0 w-full h-full object-contain" />
                     {/* Chips sit at the top so they never cover the player controls. */}
                     <span className="absolute top-4 left-4 text-[12px] font-semibold text-white bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-md pointer-events-none">
                       {emoji} {categoryLabel(artist.category)} · {artist.city}
@@ -166,25 +168,8 @@ export default async function ArtistPage({
                   {artist.tags.length > 0 && <TagRow title="Good for" items={artist.tags} />}
                 </div>
 
-                {videos.length > 1 && (
-                  <div className="mt-8">
-                    <h2 className="font-display text-[22px] font-semibold text-[var(--ink)] mb-3">More from {artist.name.split(" ")[0]}</h2>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {videos.slice(1).map((v) => (
-                        <figure key={v.id} className="rounded-xl overflow-hidden border border-[var(--line)] bg-black">
-                          <video src={v.src} controls preload="metadata" playsInline className="w-full aspect-video object-cover bg-black" />
-                          <figcaption className="flex items-center justify-between gap-3 px-3 py-2 bg-white">
-                            <span className="text-[12px] text-[var(--ink-dim)] truncate">{v.title || `${artist.name.split(" ")[0]}'s reel`}</span>
-                            <span className="flex items-center gap-3 flex-shrink-0">
-                              <VideoLikeButton videoId={v.id} initialCount={v.likesCount} initialLiked={likedVideoIds.has(v.id)} />
-                              <ShareButton path={`/artists/${artist.slug}`} title={`${v.title || artist.name} on UAESinger`} className="text-[12.5px] font-semibold text-[var(--ink-dim)] hover:text-[var(--blue-dark)] transition-colors" />
-                            </span>
-                          </figcaption>
-                        </figure>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* One reel per creator (MAX_VIDEOS), so there is no "more videos" grid.
+                    Legacy profiles may still hold extra rows; only the first is shown. */}
 
                 {/* Reviews */}
                 <section id="reviews" className="mt-10 scroll-mt-24">

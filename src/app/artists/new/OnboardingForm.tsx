@@ -112,7 +112,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
     <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12 items-start">
       {/* ---- Form ---- */}
       <form onSubmit={onSubmit} className="order-2 lg:order-1 flex flex-col gap-6">
-        <Section eyebrow="01" title="Your photos" hint={`Add up to ${MAX_PHOTOS} great shots — the first is your cover. Skip it and we'll use a stage image for your category.`}>
+        <Section eyebrow="01" title="Your photo" hint="One great shot — this is your cover. Skip it and we'll use a stage image for your category.">
           <div className="flex flex-wrap gap-3">
             {photos.map((ph, i) => (
               <span key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[var(--line)] group">
@@ -202,7 +202,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
           </Field>
         </Section>
 
-        <Section eyebrow="04" title="Show your work" hint={`Upload up to ${MAX_VIDEOS} performance clips — the fastest way to get booked.`}>
+        <Section eyebrow="04" title="Show your work" hint="Upload one performance clip — the fastest way to get booked. Portrait or landscape, both play in full.">
           {videos.length < MAX_VIDEOS && (
             <label className="flex flex-col items-center justify-center gap-1.5 py-7 rounded-xl border border-dashed border-[var(--blue-mid)] bg-[var(--blue-soft)] cursor-pointer hover:border-[var(--blue)] transition-colors">
               <span className="text-[24px]">🎬</span>

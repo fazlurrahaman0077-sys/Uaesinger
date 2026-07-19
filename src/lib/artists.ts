@@ -2,9 +2,10 @@
 // (see src/lib/talent.ts for queries). This file stays free of server-only
 // imports so client components (e.g. the onboarding form) can use it too.
 
-// Per-creator media caps — keep profiles light so pages stay fast.
-export const MAX_VIDEOS = 2;
-export const MAX_PHOTOS = 3;
+// Per-creator media caps — one cover photo, one reel. Keeps profiles light and
+// forces creators to lead with their best work.
+export const MAX_VIDEOS = 1;
+export const MAX_PHOTOS = 1;
 
 export type Category = {
   slug: string;
