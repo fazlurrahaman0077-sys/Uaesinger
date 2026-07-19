@@ -74,6 +74,8 @@ export default async function AdminPage({
     { label: "Artists live", value: artists?.filter((a) => a.is_published).length ?? 0 },
     { label: "Revenue AED", value: revenue.toLocaleString() },
     { label: "Support msgs", value: messages?.length ?? 0 },
+    { label: "Blog posts", value: posts?.length ?? 0 },
+    { label: "Blogs live", value: posts?.filter((p) => p.published).length ?? 0 },
   ];
 
   return (

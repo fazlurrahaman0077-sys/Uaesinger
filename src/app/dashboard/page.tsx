@@ -11,7 +11,7 @@ import { categoryLabel, priceRange, MAX_VIDEOS } from "@/lib/artists";
 import { listMyEnquiries, listIncomingEnquiries, BOOKING_STATUSES, type Enquiry } from "@/lib/bookings";
 import { publicVideoUrl } from "@/lib/videos";
 import { PHONE_MESSAGE, CONTACT_IN_TEXT_MESSAGE } from "@/lib/validate";
-import { updateBookingStatus, updateListing, deleteListing, shareCard } from "./actions";
+import { updateBookingStatus, updateListing, deleteListing, shareCard, updateMyProfile } from "./actions";
 import { removeVideo } from "./video-actions";
 import VideoUploader from "@/components/VideoUploader";
 import ShareButton from "@/components/ShareButton";
@@ -66,9 +66,29 @@ export default async function DashboardPage({
 
           {saved && (
             <p className="mb-6 text-[13px] text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5">
-              Listing saved.
+              {saved === "profile" ? "Your details were saved." : "Listing saved."}
             </p>
           )}
+
+          {/* Account — everyone can edit their own details, creator or hirer. */}
+          <form action={updateMyProfile} className="mb-8 bg-white border border-[var(--line)] rounded-2xl p-5 flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)]">Your name</span>
+              <input
+                name="full_name"
+                defaultValue={profile?.full_name ?? ""}
+                placeholder="Add your name"
+                className="px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[14px] text-[var(--ink)] outline-none focus:border-[var(--blue)] focus:ring-2 focus:ring-[var(--blue-soft)] transition-all w-full bg-white"
+              />
+            </label>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)]">Email</span>
+              <p className="px-3.5 py-2.5 text-[14px] text-[var(--ink-dim)]">{user.email}</p>
+            </div>
+            <button className="py-2.5 px-5 rounded-lg bg-[var(--blue)] text-white text-[13.5px] font-semibold hover:bg-[var(--blue-dark)] transition-all">
+              Save
+            </button>
+          </form>
 
           {error && (
             <p className="mb-6 text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">

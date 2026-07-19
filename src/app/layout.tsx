@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Hanken_Grotesk } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
+import VisitBeacon from "@/components/VisitBeacon";
 import "./globals.css";
 
 // Fraunces — theatrical, optical display face (marquee character).
@@ -36,7 +37,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fraunces.variable} ${hanken.variable}`}>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <VisitBeacon />
+      </body>
     </html>
   );
 }

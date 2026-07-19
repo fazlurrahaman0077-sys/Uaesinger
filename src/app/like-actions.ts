@@ -40,7 +40,7 @@ export async function setThumb(artistId: string, thumbed: boolean): Promise<{ ok
   return { ok: true, signedIn: true };
 }
 
-// Thumbs-up / un-thumb a video. Same deterministic pattern as setLike.
+// Heart / un-heart a video. Same deterministic pattern as setLike.
 export async function setVideoLike(videoId: string, liked: boolean): Promise<{ ok: boolean; signedIn: boolean }> {
   const supabase = await createClient();
   const {
@@ -53,6 +53,24 @@ export async function setVideoLike(videoId: string, liked: boolean): Promise<{ o
     if (error && error.code !== "23505") return { ok: false, signedIn: true };
   } else {
     await supabase.from("video_likes").delete().eq("user_id", user.id).eq("video_id", videoId);
+  }
+  return { ok: true, signedIn: true };
+}
+
+// Thumbs-up / un-thumb a video — the upvote that sits beside the heart. Count
+// kept by the video_thumbs_count trigger (v26).
+export async function setVideoThumb(videoId: string, thumbed: boolean): Promise<{ ok: boolean; signedIn: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, signedIn: false };
+
+  if (thumbed) {
+    const { error } = await supabase.from("video_thumbs").insert({ user_id: user.id, video_id: videoId });
+    if (error && error.code !== "23505") return { ok: false, signedIn: true };
+  } else {
+    await supabase.from("video_thumbs").delete().eq("user_id", user.id).eq("video_id", videoId);
   }
   return { ok: true, signedIn: true };
 }

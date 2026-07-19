@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CATEGORIES, categoryLabel, artistHero, priceRange } from "@/lib/artists";
-import { getAccess, isArtistLiked, isArtistThumbed, getLikedVideoIds } from "@/lib/subscription";
+import { getAccess, isArtistLiked, isArtistThumbed, getLikedVideoIds, getThumbedVideoIds } from "@/lib/subscription";
 import LikeButton from "@/components/LikeButton";
 import VideoLikeButton from "@/components/VideoLikeButton";
 import { getArtistBySlug } from "@/lib/talent";
@@ -60,8 +60,9 @@ export default async function ArtistPage({
     listArtistVideos(artist.id),
     getMyReview(artist.id),
   ]);
-  const [likedVideoIds, reviews] = await Promise.all([
+  const [likedVideoIds, thumbedVideoIds, reviews] = await Promise.all([
     getLikedVideoIds(videos.map((v) => v.id)),
+    getThumbedVideoIds(videos.map((v) => v.id)),
     listReviews(artist.id, user?.id),
   ]);
   // You can't review your own profile (RLS enforces it too) — hide the form.
@@ -128,6 +129,7 @@ export default async function ArtistPage({
                     <span className="text-[13px] font-semibold text-[var(--ink)] truncate">{videos[0].title || `${artist.name.split(" ")[0]}'s featured reel`}</span>
                     <span className="flex items-center gap-4 flex-shrink-0">
                       <VideoLikeButton videoId={videos[0].id} initialCount={videos[0].likesCount} initialLiked={likedVideoIds.has(videos[0].id)} />
+                      <VideoLikeButton videoId={videos[0].id} initialCount={videos[0].thumbsCount} initialLiked={thumbedVideoIds.has(videos[0].id)} variant="thumb" />
                       <ShareButton path={`/artists/${artist.slug}`} title={`${videos[0].title || artist.name} on UAESinger`} className="text-[12.5px] font-semibold text-[var(--ink-dim)] hover:text-[var(--blue-dark)] transition-colors" />
                     </span>
                   </figcaption>

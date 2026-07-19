@@ -22,6 +22,20 @@ async function requireUser() {
   return { supabase, user };
 }
 
+// Anyone: edit their own account details. profiles_update_own scopes the write
+// to the caller's row, and role is deliberately not editable here — only an
+// admin can change that.
+export async function updateMyProfile(formData: FormData) {
+  const { supabase, user } = await requireUser();
+  const fullName = String(formData.get("full_name") ?? "").trim();
+
+  if (hasContactInfo(fullName)) redirect("/dashboard?error=leak");
+
+  await supabase.from("profiles").update({ full_name: fullName || null }).eq("id", user.id);
+  revalidatePath("/dashboard");
+  redirect("/dashboard?saved=profile");
+}
+
 // Creator: update the status of an incoming enquiry. RLS (bookings_update_owner)
 // ensures only the owning artist can write.
 export async function updateBookingStatus(formData: FormData) {

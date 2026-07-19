@@ -28,34 +28,11 @@ export async function proxy(request: NextRequest) {
   // Touch the session so an expired token gets refreshed into the response.
   await supabase.auth.getUser();
 
-  // Unique-daily-visitor tracking, keyed on the client IP (one row per IP per
-  // day → no duplicate views from incognito / multiple browsers / cleared
-  // cookies). The IP is hashed with the day so we never store raw addresses.
-  // A per-day cookie throttles writes so the proxy doesn't hit the DB on every
-  // request; the (visitor_id, day) PK is the real dedupe guard.
-  // Crawlers were being counted as visitors — each bot IP is a distinct "visitor",
-  // which is most of the traffic on a site this young. Cheap UA filter, no dep.
-  const ua = request.headers.get("user-agent") ?? "";
-  const isBot = !ua || /bot|crawl|spider|slurp|headless|preview|monitor|curl|wget|python-|axios|fetch\//i.test(ua);
-
-  const today = new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
-  if (!isBot && request.cookies.get("v_day")?.value !== today) {
-    response.cookies.set("v_day", today, { maxAge: 60 * 60 * 24, httpOnly: true, sameSite: "lax" });
-    const fwd = request.headers.get("x-forwarded-for");
-    const ip = (fwd ? fwd.split(",")[0].trim() : "") || request.headers.get("x-real-ip") || "local";
-    await supabase.from("visits").insert({ visitor_id: await visitorHash(ip, today), day: today });
-  }
-
+  // Visit counting used to happen here, gated on a user-agent blocklist. Every
+  // crawler sending a Chrome UA counted as a visitor, which is how a site with
+  // single-digit users recorded ~150 a day. It now runs from VisitBeacon against
+  // /api/visit, so only browsers that actually execute JS are counted.
   return response;
-}
-
-// SHA-256(ip:day) truncated — a stable, non-reversible per-day visitor id.
-async function visitorHash(ip: string, day: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${ip}:${day}:uaesinger`));
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 32);
 }
 
 export const config = {

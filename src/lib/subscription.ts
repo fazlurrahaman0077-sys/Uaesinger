@@ -95,6 +95,22 @@ export async function getLikedVideoIds(videoIds: string[]): Promise<Set<string>>
   return new Set((data ?? []).map((r) => r.video_id as string));
 }
 
+// Same as getLikedVideoIds, for the thumbs-up beside the heart (v26).
+export async function getThumbedVideoIds(videoIds: string[]): Promise<Set<string>> {
+  if (videoIds.length === 0) return new Set();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return new Set();
+  const { data } = await supabase
+    .from("video_thumbs")
+    .select("video_id")
+    .eq("user_id", user.id)
+    .in("video_id", videoIds);
+  return new Set((data ?? []).map((r) => r.video_id as string));
+}
+
 export function maskedNumber(): string {
   return "+971 5• ••• ••••";
 }

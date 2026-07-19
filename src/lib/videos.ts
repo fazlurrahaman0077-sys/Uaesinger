@@ -9,13 +9,14 @@ export type Video = {
   title: string | null;
   src: string; // Cloudinary CDN url, or Supabase public url
   likesCount: number;
+  thumbsCount: number;
 };
 
 export function publicVideoUrl(path: string): string {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/creator-videos/${path}`;
 }
 
-type Row = { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null; likes_count: number | null };
+type Row = { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null; likes_count: number | null; thumbs_count: number | null };
 
 // Insert Cloudinary auto-format/auto-quality so viewers stream a right-sized
 // rendition instead of the raw upload. No-op for non-Cloudinary urls.
@@ -28,13 +29,13 @@ export async function listArtistVideos(artistId: string): Promise<Video[]> {
   const supabase = createPublicClient();
   const { data } = await supabase
     .from("artist_videos")
-    .select("id, artist_id, storage_path, url, title, likes_count")
+    .select("id, artist_id, storage_path, url, title, likes_count, thumbs_count")
     .eq("artist_id", artistId)
     .order("created_at", { ascending: true });
   return ((data ?? []) as Row[])
     .map((r) => {
       const src = optimize(r.url) || (r.storage_path ? publicVideoUrl(r.storage_path) : null);
-      return src ? { id: r.id, artistId: r.artist_id, title: r.title, src, likesCount: r.likes_count ?? 0 } : null;
+      return src ? { id: r.id, artistId: r.artist_id, title: r.title, src, likesCount: r.likes_count ?? 0, thumbsCount: r.thumbs_count ?? 0 } : null;
     })
     .filter((v): v is Video => v !== null);
 }
