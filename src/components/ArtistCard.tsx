@@ -28,9 +28,6 @@ export default function ArtistCard({ artist }: { artist: Artist & { id: string }
             {artist.featuredTag}
           </span>
         )}
-        <div className="absolute top-3 right-3">
-          <LikeButton artistId={artist.id} initialCount={artist.likesCount} />
-        </div>
         <span className="absolute bottom-3 left-3 text-[10.5px] font-semibold text-white bg-black/35 backdrop-blur-sm px-2.5 py-1 rounded-md">
           {emojiFor(artist.category)} {categoryLabel(artist.category)} · {artist.city}
         </span>
@@ -42,11 +39,20 @@ export default function ArtistCard({ artist }: { artist: Artist & { id: string }
           <span className="font-display text-[16px] font-semibold text-[var(--ink)]">{artist.name}</span>
           <span className="text-[12px] text-[var(--gold)] font-bold ml-2 flex-shrink-0">★ {artist.rating}</span>
         </div>
-        <p className="text-[12.5px] text-[var(--ink-dim)] mb-2">
+        <p className="text-[12.5px] text-[var(--ink-dim)] mb-2.5">
           {artist.subcategory || artist.tagline}
         </p>
+
+        {/* Social proof up front — hearts and thumbs stay clickable inside the
+            card link (LikeButton swallows the click). */}
+        <div className="flex items-center gap-2 mb-2.5">
+          <LikeButton artistId={artist.id} initialCount={artist.likesCount} variant="heart" />
+          <LikeButton artistId={artist.id} initialCount={artist.thumbsCount} variant="thumb" />
+          <span className="text-[11.5px] text-[var(--ink-faint)] ml-auto">{artist.reviews} reviews</span>
+        </div>
+
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[11.5px] text-[var(--ink-faint)]">{artist.gigs} gigs · {artist.reviews} reviews</p>
+          <p className="text-[11.5px] text-[var(--ink-faint)]">{artist.gigs} gigs</p>
           {priceRange(artist.priceMin, artist.priceMax) && (
             <p className="text-[11.5px] font-semibold text-[var(--ink)] whitespace-nowrap">
               {priceRange(artist.priceMin, artist.priceMax)}

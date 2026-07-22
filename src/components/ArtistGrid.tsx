@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ArtistCard from "@/components/ArtistCard";
+import Reveal from "@/components/Reveal";
 import SoundBars from "@/components/SoundBars";
 import { CATEGORIES } from "@/lib/artists";
 import { listArtists } from "@/lib/talent";
@@ -70,8 +71,10 @@ export default async function ArtistGrid() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {featured.map((a) => (
-                <ArtistCard key={a.slug} artist={a} />
+              {featured.map((a, i) => (
+                <Reveal key={a.slug} delay={i * 80}>
+                  <ArtistCard artist={a} />
+                </Reveal>
               ))}
             </div>
           )}

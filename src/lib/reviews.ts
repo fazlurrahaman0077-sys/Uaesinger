@@ -38,6 +38,40 @@ export async function listReviews(artistId: string, viewerId?: string): Promise<
   }));
 }
 
+export type RecentReview = {
+  id: string;
+  authorName: string;
+  rating: number;
+  body: string;
+  artistName: string;
+  artistSlug: string;
+};
+
+// Newest reviews across every artist, for the homepage social-proof rail.
+// Rated 4+ only: the homepage is a shop window, not a complaints board — the
+// full unfiltered set still shows on each artist's own profile. author_email is
+// never selected (v23 revokes it from anon anyway).
+export async function listRecentReviews(limit = 12): Promise<RecentReview[]> {
+  const { data } = await createPublicClient()
+    .from("artist_reviews")
+    .select("id, author_name, rating, body, created_at, artists!inner(name, slug)")
+    .gte("rating", 4)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  type Joined = Omit<Row, "user_id"> & { artists: { name: string; slug: string } | null };
+  return ((data ?? []) as unknown as Joined[])
+    .filter((r) => r.artists && r.body?.trim())
+    .map((r) => ({
+      id: r.id,
+      authorName: r.author_name?.trim() || "Anonymous",
+      rating: r.rating,
+      body: r.body,
+      artistName: r.artists!.name,
+      artistSlug: r.artists!.slug,
+    }));
+}
+
 // The current user's own review of this artist, if any — lets the form open
 // pre-filled in edit mode instead of offering a duplicate they can't insert.
 export async function getMyReview(artistId: string): Promise<{ rating: number; body: string } | null> {

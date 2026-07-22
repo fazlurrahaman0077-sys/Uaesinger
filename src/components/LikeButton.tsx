@@ -73,7 +73,7 @@ export default function LikeButton({
       className={`inline-flex items-center gap-1.5 rounded-full font-semibold transition-all disabled:opacity-60 ${
         lg
           ? "px-4 py-2 text-[14px] border border-[var(--line)] bg-white hover:bg-[var(--bg2)]"
-          : "px-2.5 py-1.5 text-[12px] bg-black/35 backdrop-blur-sm text-white hover:bg-black/50"
+          : "px-2 py-1 text-[11.5px] border border-[var(--line)] bg-white text-[var(--ink-dim)] hover:border-[var(--blue-mid)] hover:bg-[var(--bg2)] active:scale-95"
       }`}
     >
       <svg width={lg ? 18 : 15} height={lg ? 18 : 15} viewBox="0 0 24 24" aria-hidden="true"
@@ -81,7 +81,7 @@ export default function LikeButton({
         strokeLinecap="round" strokeLinejoin="round">
         <path d={v.path} />
       </svg>
-      <span className={lg ? "text-[var(--ink)]" : ""}>{count}</span>
+      <span className="text-[var(--ink)]">{count}</span>
     </button>
   );
 }

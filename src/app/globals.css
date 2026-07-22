@@ -78,8 +78,27 @@ body {
 }
 .bloom { animation: bloom 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
+/* Testimonial rail: the track holds the cards twice and loops by scrolling
+   exactly one copy's width. That is half the track plus half a gap — a bare
+   -50% lands mid-gap and shows a visible stutter at the seam. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-50% - (var(--marquee-gap) / 2))); }
+}
+.marquee-track {
+  --marquee-gap: 20px;
+  gap: var(--marquee-gap);
+  animation: marquee var(--marquee-duration, 60s) linear infinite;
+  width: max-content;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track { animation-play-state: paused; }
+
 @media (prefers-reduced-motion: reduce) {
   .eq-bar { animation: none; transform: scaleY(0.6); }
   .bloom  { animation: none; }
   html    { scroll-behavior: auto; }
+  /* No auto-scroll — the rail becomes a plain swipeable row. */
+  .marquee       { overflow-x: auto; }
+  .marquee-track { animation: none; }
 }

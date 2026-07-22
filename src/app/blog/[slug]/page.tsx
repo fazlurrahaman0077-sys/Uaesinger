@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getPost, bodyParagraphs, formatDate, isHtml } from "@/lib/blog";
+import { getPost, bodyParagraphs, isHtml } from "@/lib/blog";
+import { formatDate } from "@/lib/blog-view";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/site";
 

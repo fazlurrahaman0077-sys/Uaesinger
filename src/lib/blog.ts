@@ -52,9 +52,3 @@ export function bodyParagraphs(body: string | null): string[] {
     .filter(Boolean);
 }
 
-export function formatDate(iso: string): string {
-  const [datePart] = iso.split("T");
-  const [y, m, d] = datePart.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[Number(m) - 1]} ${Number(d)}, ${y}`;
-}
