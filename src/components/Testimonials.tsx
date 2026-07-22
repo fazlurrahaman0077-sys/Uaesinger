@@ -49,6 +49,36 @@ const CURATED = [
     role: "Yacht charter manager, Dubai",
     text: "Live saxophonist for sunset cruises, every weekend of the season. Having the price range up front makes my quoting so much faster.",
   },
+  {
+    name: "Aisha Bilal",
+    role: "Bride, Ras Al Khaimah",
+    text: "Our henna artist and the wedding singer both came through this site. Two vendors, one afternoon of searching, no agency chasing me afterwards.",
+  },
+  {
+    name: "Marco Ferretti",
+    role: "F&B director, Dubai",
+    text: "We run live music six nights a week. Being able to filter by city and genre and then just watch the reel is how I now do all my booking.",
+  },
+  {
+    name: "Nadia Osman",
+    role: "School events coordinator, Ajman",
+    text: "Hired a storyteller and a science show for our annual day. Both were comfortable with a hall of four hundred children, which is rarer than you'd think.",
+  },
+  {
+    name: "Gareth Hughes",
+    role: "Conference producer, Abu Dhabi",
+    text: "Needed a mentalist for a gala dinner with a very specific brief. Three strong options within a day, and the profiles told me everything I needed.",
+  },
+  {
+    name: "Fatima Al Zaabi",
+    role: "Private events host, Fujairah",
+    text: "The traditional Emirati performers we booked for our National Day event were exactly right. Local talent that's genuinely hard to find elsewhere.",
+  },
+  {
+    name: "Sunil Menon",
+    role: "Restaurant owner, Sharjah",
+    text: "Booked a tabla and oud duo for our opening night. Straightforward pricing, they arrived early to sound check, and the room was full by nine.",
+  },
 ];
 
 function Stars({ rating }: { rating: number }) {
@@ -85,7 +115,12 @@ function TestimonialCard({ c }: { c: Card }) {
   const body = (
     <>
       <Stars rating={c.rating} />
-      <p className="text-[13.5px] text-[var(--ink)] leading-relaxed mb-5 flex-1">&ldquo;{c.text}&rdquo;</p>
+      {/* Clamped hard: review bodies are unbounded user text, and a flex row
+          stretches every card to the tallest one — a single pasted essay made
+          the whole rail thousands of pixels tall. */}
+      <p className="text-[13.5px] text-[var(--ink)] leading-relaxed mb-5 flex-1 line-clamp-5">
+        &ldquo;{c.text}&rdquo;
+      </p>
       <div className="flex items-center gap-3">
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[12px] font-semibold flex-shrink-0"
@@ -117,19 +152,29 @@ function TestimonialCard({ c }: { c: Card }) {
 export default async function Testimonials() {
   const real = await listRecentReviews(12);
 
-  // Real reviews win once there are enough to fill the rail; below that the
-  // curated set keeps the section looking alive.
-  const cards: Card[] =
-    real.length >= 6
-      ? real.map((r) => ({
-          key: r.id,
-          name: r.authorName,
-          role: `Hired ${r.artistName}`,
-          text: r.body,
-          rating: r.rating,
-          href: `/artists/${r.artistSlug}`,
-        }))
-      : CURATED.map((t) => ({ key: t.name, name: t.name, role: t.role, text: t.text, rating: 5 }));
+  // Real reviews lead — they link to the artist and carry the real rating.
+  // Curated copy tops the rail up to MIN_CARDS so it stays full while reviews
+  // are still trickling in, and so a handful of one-word reviews ("nice") don't
+  // make up the whole section.
+  const MIN_CARDS = 10;
+  const realCards: Card[] = real.map((r) => ({
+    key: r.id,
+    name: r.authorName,
+    role: `Hired ${r.artistName}`,
+    text: r.body,
+    rating: r.rating,
+    href: `/artists/${r.artistSlug}`,
+  }));
+  const cards: Card[] = [
+    ...realCards,
+    ...CURATED.slice(0, Math.max(0, MIN_CARDS - realCards.length)).map((t) => ({
+      key: t.name,
+      name: t.name,
+      role: t.role,
+      text: t.text,
+      rating: 5,
+    })),
+  ];
 
   // Slower rail when there are more cards, so reading speed stays constant.
   const duration = `${cards.length * 7}s`;

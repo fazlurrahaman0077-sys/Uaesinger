@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import FilterRows from "@/components/FilterRows";
 import Header from "@/components/Header";
 import { requireAdmin } from "@/lib/admin";
 import { toggleArtist, deleteArtist, togglePost, deletePost, deleteUser, deleteUserContent, deleteMessage, adminUpdateUser } from "./actions";
@@ -294,13 +295,19 @@ export default async function AdminPage({
                 + New post
               </Link>
             </div>
-            <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden">
-              {(posts ?? []).length === 0 ? (
+            {(posts ?? []).length === 0 ? (
+              <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden">
                 <p className="px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">No posts yet. Write your first one.</p>
-              ) : (
-                <div className="divide-y divide-[var(--line)]">
+              </div>
+            ) : (
+              <FilterRows placeholder="Search posts by title, category or slug…">
+                <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden divide-y divide-[var(--line)]">
                   {posts!.map((p) => (
-                    <div key={p.id} className="flex items-center gap-3 px-5 py-3 text-[13px]">
+                    <div
+                      key={p.id}
+                      data-search={`${p.title} ${p.category ?? ""} ${p.slug} ${p.published ? "live" : "draft"}`.toLowerCase()}
+                      className="flex items-center gap-3 px-5 py-3 text-[13px]"
+                    >
                       <div className="flex-1 min-w-0">
                         <Link href={`/blog/${p.slug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">
                           {p.title}
@@ -327,8 +334,8 @@ export default async function AdminPage({
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </FilterRows>
+            )}
           </section>
         </div>
       </main>

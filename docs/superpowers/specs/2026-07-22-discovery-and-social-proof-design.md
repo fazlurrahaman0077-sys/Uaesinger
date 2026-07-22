@@ -61,9 +61,15 @@ rated 4 or better, embedding `artists(name, slug)` so each card can link to
 the profile. The rating floor keeps a single angry review off the homepage;
 `author_email` stays unselected, as v23 requires.
 
-`Testimonials` renders real reviews when at least six exist and falls back to
-the curated list otherwise, so the section is never sparse. The curated list
-grows from three entries to nine — enough to fill a scrolling track.
+`Testimonials` leads with the real reviews and tops the rail up from the
+curated list to ten cards, so the section stays full while reviews trickle in
+and a run of one-word reviews ("nice") never makes up the whole section. The
+curated list grows from three entries to sixteen.
+
+Review bodies are unbounded user text and the rail is a flex row, which
+stretches every card to the tallest one — a single 1,300-character review made
+the whole section thousands of pixels tall. Card text is clamped to five lines,
+which bounds the tallest card and keeps the rail uniform.
 
 ### Marquee
 
@@ -81,6 +87,15 @@ The homepage `Cities`, `Stats` and `FAQ` sections and the blog index cards pop
 in with no motion while their neighbours fade up. Wrap each in the existing
 `Reveal` component with staggered delays. `Reveal` already short-circuits to
 visible under reduced motion.
+
+### Admin post search
+
+The admin blog list gets the same instant filter, but its rows contain
+server-action `<form>`s, so turning the list into a client component would mean
+threading every action through props. Instead `FilterRows` wraps the
+server-rendered list, each row carries a lowercased `data-search` attribute,
+and the client component toggles `hidden` on the misses. Safe because the rows
+never re-render — the search term lives in the wrapper's state, not in them.
 
 ## Verification
 
