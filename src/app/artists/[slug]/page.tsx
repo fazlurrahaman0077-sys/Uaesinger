@@ -110,11 +110,11 @@ export default async function ArtistPage({
             <div>
               {/* Video-only hero — artist photos are never shown (protects identity). */}
               {videos.length > 0 ? (
-                <figure className="rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
-                  {/* Portrait phone reels are the norm — object-contain letterboxes them
-                      whole instead of cropping to a middle slice (object-cover did). */}
-                  <div className="relative aspect-[16/9] bg-black">
-                    <video src={videos[0].src} controls preload="metadata" playsInline className="absolute inset-0 w-full h-full object-contain" />
+                <figure className="mx-auto w-fit max-w-full rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
+                  {/* No forced aspect box — the video sizes to its OWN shape (portrait reels
+                      and landscape clips alike), just capped by height. Nothing crops or zooms. */}
+                  <div className="relative bg-black">
+                    <video src={videos[0].src} controls preload="metadata" playsInline className="block mx-auto w-auto max-w-full max-h-[min(70vh,560px)] bg-black" />
                     {/* Chips sit at the top so they never cover the player controls. */}
                     <span className="absolute top-4 left-4 text-[12px] font-semibold text-white bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-md pointer-events-none">
                       {emoji} {categoryLabel(artist.category)} · {artist.city}
