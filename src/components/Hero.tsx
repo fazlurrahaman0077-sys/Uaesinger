@@ -1,9 +1,16 @@
 import Link from "next/link";
 import SoundBars from "@/components/SoundBars";
+import VideoReel from "@/components/VideoReel";
+import { getSpotlightArtist } from "@/lib/talent";
+import { categoryLabel } from "@/lib/artists";
+import { formatViews } from "@/lib/format";
 
 // Signature hero: a darkened stage with an amber spotlight bloom behind a
 // Fraunces marquee headline, and a live equalizer as the "on air" indicator.
-export default function Hero() {
+// The preview card is a real, top-ranked creator — see getSpotlightArtist.
+export default async function Hero() {
+  const spotlight = await getSpotlightArtist();
+
   return (
     <section className="relative overflow-hidden bg-[var(--stage)] text-white">
       {/* Spotlight bloom */}
@@ -68,50 +75,81 @@ export default function Hero() {
               <span className="w-2 h-2 rounded-full bg-[var(--line)]" />
               <span className="w-2 h-2 rounded-full bg-[var(--line)]" />
               <span className="w-2 h-2 rounded-full bg-[var(--line)]" />
-              <span className="ml-2 text-[10.5px] text-[var(--ink-faint)]">uaesinger.com/layla-hassan</span>
+              <span className="ml-2 text-[10.5px] text-[var(--ink-faint)] truncate">
+                uaesinger.com/artists/{spotlight?.artist.slug ?? "browse"}
+              </span>
             </div>
 
             <div className="aspect-[16/10] bg-[var(--blue-deep)] relative flex items-center justify-center overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/creators/singers-1.jpg" alt="Live performer reel" className="absolute inset-0 w-full h-full object-cover" />
-              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/25" />
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{ background: "radial-gradient(80% 60% at 50% 0%, rgba(245,166,35,0.25), transparent 60%)" }}
-              />
-              <span className="absolute top-3 left-3 z-10 flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-[var(--stage)] bg-[var(--amber)] px-2.5 py-1 rounded-full">
+              {spotlight ? (
+                // The creator's own reel, playable right here. object-cover fills
+                // the card's 16/10 window whatever shape the clip is.
+                <VideoReel
+                  src={spotlight.video.src}
+                  videoId={spotlight.video.id}
+                  views={spotlight.video.viewsCount}
+                  wrapperClassName="absolute inset-0"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/creators/singers-1.jpg" alt="Live performer reel" className="absolute inset-0 w-full h-full object-cover" />
+                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-black/25" />
+                  <div
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{ background: "radial-gradient(80% 60% at 50% 0%, rgba(245,166,35,0.25), transparent 60%)" }}
+                  />
+                  <div className="relative w-14 h-14 rounded-full bg-white shadow-[0_6px_24px_rgba(0,0,0,0.35)] flex items-center justify-center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--blue)">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </>
+              )}
+              <span className="absolute top-3 left-3 z-20 flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-[var(--stage)] bg-[var(--amber)] px-2.5 py-1 rounded-full pointer-events-none">
                 <SoundBars bars={3} height={9} size={2} gap={1.5} color="var(--stage)" /> Live reel
               </span>
-              <div className="relative w-14 h-14 rounded-full bg-white shadow-[0_6px_24px_rgba(0,0,0,0.35)] flex items-center justify-center">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--blue)">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
             </div>
 
             <div className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <span className="font-display text-[18px] font-semibold text-[var(--ink)]">Layla Hassan</span>
-                <span className="text-[13px] text-[var(--gold)] font-bold">★ 4.9</span>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <span className="font-display text-[18px] font-semibold text-[var(--ink)] min-w-0 truncate">
+                  {spotlight?.artist.name ?? "Your name here"}
+                </span>
+                {(spotlight?.artist.reviews ?? 0) > 0 && (
+                  <span className="text-[13px] text-[var(--gold)] font-bold flex-shrink-0">★ {spotlight!.artist.rating}</span>
+                )}
               </div>
               <div className="flex gap-1.5 flex-wrap mb-3">
-                {["Wedding vocalist", "Dubai", "142 gigs"].map((t) => (
-                  <span key={t} className="text-[11px] text-[var(--blue-dark)] bg-[var(--blue-soft)] px-2.5 py-0.5 rounded-full">
-                    {t}
-                  </span>
-                ))}
+                {(spotlight
+                  ? [
+                      spotlight.artist.subcategory || categoryLabel(spotlight.artist.category),
+                      spotlight.artist.city,
+                      spotlight.video.viewsCount > 0
+                        ? `${formatViews(spotlight.video.viewsCount)} play${spotlight.video.viewsCount === 1 ? "" : "s"}`
+                        : null,
+                    ]
+                  : ["Wedding vocalist", "Dubai", "Live reel"]
+                )
+                  .filter((t): t is string => !!t)
+                  .map((t) => (
+                    <span key={t} className="text-[11px] text-[var(--blue-dark)] bg-[var(--blue-soft)] px-2.5 py-0.5 rounded-full">
+                      {t}
+                    </span>
+                  ))}
               </div>
-              <div className="flex items-center justify-between bg-[var(--bg2)] border border-[var(--line)] rounded-lg px-3 py-2.5">
-                <div className="flex items-center gap-2 text-[12px] text-[var(--ink-dim)]">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div className="flex items-center justify-between gap-2 bg-[var(--bg2)] border border-[var(--line)] rounded-lg px-3 py-2.5">
+                <div className="flex items-center gap-2 text-[12px] text-[var(--ink-dim)] min-w-0">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0">
                     <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
                   </svg>
-                  Contact locked
+                  <span className="truncate">Contact locked</span>
                 </div>
                 <Link
-                  href="/artists"
-                  className="text-[11px] font-bold text-white bg-[var(--blue)] px-3 py-1.5 rounded-md hover:bg-[var(--blue-dark)] transition-colors"
+                  href={spotlight ? `/artists/${spotlight.artist.slug}` : "/artists"}
+                  className="text-[11px] font-bold text-white bg-[var(--blue)] px-3 py-1.5 rounded-md hover:bg-[var(--blue-dark)] transition-colors flex-shrink-0"
                 >
                   Unlock
                 </Link>

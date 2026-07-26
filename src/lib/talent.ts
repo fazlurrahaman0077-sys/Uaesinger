@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Artist } from "@/lib/artists";
 import { normalizeText } from "@/lib/format";
+import { toVideo, type Video, type VideoRow } from "@/lib/videos";
 
 // DB row -> display shape used by the components.
 type Row = {
@@ -86,6 +87,31 @@ export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & 
   const { data, error } = await query.order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as Row[]).map(toArtist);
+}
+
+// The homepage hero card. Whoever earned the most attention gets the slot —
+// plays are the base, reactions count double because they take a deliberate tap.
+// Only artists with a reel qualify: the card is built around the video.
+//
+// ponytail: ranks in JS over the 30 most-played reels, which is the whole table
+// at this size. This is also where a paid "boost your profile" slot goes — check
+// a boost_until column first and fall through to this organic order.
+export async function getSpotlightArtist(): Promise<{ artist: Artist & { id: string }; video: Video } | null> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("artist_videos")
+    .select(`id, artist_id, storage_path, url, title, likes_count, thumbs_count, views_count, artists!inner(${COLS}, is_published)`)
+    .eq("artists.is_published", true)
+    .order("views_count", { ascending: false })
+    .limit(30);
+  if (error || !data?.length) return null;
+
+  const rows = data as unknown as (VideoRow & { artists: Row })[];
+  const score = (r: VideoRow) => (r.views_count ?? 0) + 2 * ((r.likes_count ?? 0) + (r.thumbs_count ?? 0));
+  const best = rows.reduce((a, b) => (score(b) > score(a) || (score(b) === score(a) && b.artists.rating > a.artists.rating) ? b : a));
+
+  const video = toVideo(best);
+  return video ? { artist: toArtist(best.artists), video } : null;
 }
 
 export async function getArtistBySlug(slug: string): Promise<(Artist & { id: string }) | null> {

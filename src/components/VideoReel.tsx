@@ -11,12 +11,14 @@ export default function VideoReel({
   videoId,
   views = 0,
   className,
+  wrapperClassName = "",
   children,
 }: {
   src: string;
   videoId?: string;
   views?: number;
   className?: string;
+  wrapperClassName?: string; // lets a caller drop the player into an aspect box
   children?: ReactNode;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -47,7 +49,11 @@ export default function VideoReel({
   }
 
   return (
-    <div className="relative bg-black">
+    // A caller-supplied wrapper class replaces `relative` rather than adding to
+    // it — Tailwind emits position utilities in a fixed order, so `relative`
+    // would beat an `absolute` passed in here no matter how it's written.
+    // Either way the overlays get a positioned box to anchor to.
+    <div className={`bg-black ${wrapperClassName || "relative"}`}>
       <video
         ref={ref}
         src={src}
