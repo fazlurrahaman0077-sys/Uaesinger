@@ -292,7 +292,7 @@ async function CreatorView({ userId }: { userId: string }) {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 items-start">
+            <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6 items-start [&>*]:min-w-0">
               {/* Edit listing + delete (one column) */}
               <div className="flex flex-col gap-3">
               <form action={updateListing} className="bg-white border border-[var(--line)] rounded-2xl p-6 flex flex-col gap-4">
@@ -412,7 +412,7 @@ async function CreatorView({ userId }: { userId: string }) {
               <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--ink-faint)] mb-3">
                 Videos <span className="text-[var(--blue-dark)]">({vids.length}/{MAX_VIDEOS})</span>
               </p>
-              <div className="grid sm:grid-cols-[1fr_1fr] gap-4 items-start">
+              <div className="grid sm:grid-cols-[1fr_1fr] gap-4 items-start [&>*]:min-w-0">
                 {vids.length < MAX_VIDEOS ? (
                   <VideoUploader artistId={a.id} />
                 ) : (

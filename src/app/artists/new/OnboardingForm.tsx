@@ -109,7 +109,7 @@ export default function OnboardingForm({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12 items-start">
+    <div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-12 items-start [&>*]:min-w-0">
       {/* ---- Form ---- */}
       <form onSubmit={onSubmit} className="order-2 lg:order-1 flex flex-col gap-6">
         <Section eyebrow="01" title="Your photo" hint="One great shot — this is your cover. Skip it and we'll use a stage image for your category.">

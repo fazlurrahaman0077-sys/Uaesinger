@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Artist } from "@/lib/artists";
+import { normalizeText } from "@/lib/format";
 
 // DB row -> display shape used by the components.
 type Row = {
@@ -45,7 +46,7 @@ function toArtist(r: Row): Artist & { id: string } {
     ownerId: r.owner_id,
     city: r.city,
     tagline: r.tagline ?? "",
-    bio: r.bio ?? "",
+    bio: normalizeText(r.bio),
     rating: r.rating,
     reviews: r.reviews,
     gigs: r.gigs,

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { normalizeText } from "@/lib/format";
 
 export type Review = {
   id: string;
@@ -32,7 +33,7 @@ export async function listReviews(artistId: string, viewerId?: string): Promise<
     id: r.id,
     authorName: r.author_name?.trim() || "Anonymous",
     rating: r.rating,
-    body: r.body,
+    body: normalizeText(r.body),
     createdAt: r.created_at,
     mine: !!viewerId && r.user_id === viewerId,
   }));
@@ -66,7 +67,7 @@ export async function listRecentReviews(limit = 12): Promise<RecentReview[]> {
       id: r.id,
       authorName: r.author_name?.trim() || "Anonymous",
       rating: r.rating,
-      body: r.body,
+      body: normalizeText(r.body),
       artistName: r.artists!.name,
       artistSlug: r.artists!.slug,
     }));

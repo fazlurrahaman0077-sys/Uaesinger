@@ -108,13 +108,21 @@ export default async function ArtistPage({
           </nav>
 
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-8 items-start">
-            {/* Left: hero + bio */}
-            <div>
+            {/* Left: hero + bio.
+                min-w-0 is load-bearing: a grid item's automatic minimum is its
+                content's min-content width, and for the reel <video> that's the
+                file's own pixel width (a 1080x1920 phone clip ⇒ 1080px). The
+                video's max-w-full is a percentage, which doesn't apply during
+                that sizing pass, so the track inflated past the 1180 container
+                and the whole page grew a horizontal scrollbar. */}
+            <div className="min-w-0">
               {/* Video-only hero — artist photos are never shown (protects identity). */}
               {videos.length > 0 ? (
-                <figure className="mx-auto w-fit max-w-full rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
+                <figure className="mx-auto w-full sm:w-fit max-w-full rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
                   {/* No forced aspect box — the video sizes to its OWN shape (portrait reels
-                      and landscape clips alike), just capped by height. Nothing crops or zooms. */}
+                      and landscape clips alike), just capped by height. Nothing crops or zooms.
+                      w-fit only from sm up: on a phone the video's own width wins the
+                      fit-content sizing and pushes the card past the edge of the screen. */}
                   <VideoReel src={videos[0].src} videoId={videos[0].id} views={videos[0].viewsCount} className="block mx-auto w-auto max-w-full max-h-[min(70vh,560px)] bg-black">
                     {/* Chips sit at the top so they never cover the player controls. */}
                     <span className="absolute top-4 left-4 text-[12px] font-semibold text-white bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-md pointer-events-none">
@@ -242,7 +250,7 @@ export default async function ArtistPage({
             </div>
 
             {/* Right: booking panel (sticky) */}
-            <aside className="lg:sticky lg:top-[80px] bg-white border border-[var(--line)] rounded-2xl p-6 shadow-[0_16px_40px_rgba(16,26,38,0.06)]">
+            <aside className="min-w-0 lg:sticky lg:top-[80px] bg-white border border-[var(--line)] rounded-2xl p-6 shadow-[0_16px_40px_rgba(16,26,38,0.06)]">
               <div className="flex items-center justify-between mb-1">
                 <h1 className="font-display text-[24px] font-semibold text-[var(--ink)]">{artist.name}</h1>
                 <span className="text-[13px] text-[var(--gold)] font-bold">★ {artist.rating}</span>

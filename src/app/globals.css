@@ -54,6 +54,14 @@ body {
   color: var(--ink);
   background: #FDFCFE;
   -webkit-font-smoothing: antialiased;
+  /* The page never scrolls sideways. Backstop only — an overflow still means a
+     blown-out track somewhere. clip, not hidden: hidden would make body a scroll
+     container and break the sticky booking panel. */
+  overflow-x: clip;
+  /* Bios and reviews are pasted from WhatsApp/Word and arrive full of
+     non-breaking spaces, which make a whole paragraph one unbreakable word that
+     runs off the page. Inherited, so it covers every user-written field. */
+  overflow-wrap: break-word;
 }
 
 .font-display {
