@@ -94,6 +94,9 @@ export type Artist = {
   thumbsCount: number;
   experienceYears: number | null;
   skills: string[];
+  // Plays across the artist's reels. Only the list queries fill this in — it
+  // costs a second query, and the profile page reads the per-video count instead.
+  playsCount?: number;
 };
 
 // All nationalities (demonyms). Popular-in-UAE ones first, then the full A–Z list.

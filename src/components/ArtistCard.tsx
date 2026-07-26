@@ -2,6 +2,7 @@ import Link from "next/link";
 import { type Artist, categoryLabel, artistImage, priceRange } from "@/lib/artists";
 import { CATEGORIES } from "@/lib/artists";
 import LikeButton from "@/components/LikeButton";
+import { formatViews } from "@/lib/format";
 
 function emojiFor(slug: string) {
   return CATEGORIES.find((c) => c.slug === slug)?.emoji ?? "★";
@@ -48,7 +49,17 @@ export default function ArtistCard({ artist }: { artist: Artist & { id: string }
         <div className="flex items-center gap-2 mb-2.5">
           <LikeButton artistId={artist.id} initialCount={artist.likesCount} variant="heart" />
           <LikeButton artistId={artist.id} initialCount={artist.thumbsCount} variant="thumb" />
-          <span className="text-[11.5px] text-[var(--ink-faint)] ml-auto">{artist.reviews} reviews</span>
+          {(artist.playsCount ?? 0) > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-[var(--ink-dim)]" title="Reel plays">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 4l14 8-14 8V4z" />
+              </svg>
+              {formatViews(artist.playsCount!)}
+            </span>
+          )}
+          <span className="text-[11.5px] text-[var(--ink-faint)] ml-auto">
+            {artist.reviews} review{artist.reviews === 1 ? "" : "s"}
+          </span>
         </div>
 
         <div className="flex items-center justify-between gap-2">

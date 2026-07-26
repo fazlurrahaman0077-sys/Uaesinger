@@ -86,7 +86,23 @@ export async function listArtists(filter: ArtistFilter = {}): Promise<(Artist & 
   }
   const { data, error } = await query.order("created_at", { ascending: false });
   if (error || !data) return [];
-  return (data as Row[]).map(toArtist);
+  const artists = (data as Row[]).map(toArtist);
+
+  // Plays for the cards, so a visitor sees the number without opening a profile.
+  // ponytail: one extra round trip over the whole video table (one reel per
+  // creator, so it's tiny). Denormalize onto artists if this list ever pages.
+  const { data: plays } = await supabase
+    .from("artist_videos")
+    .select("artist_id, views_count")
+    .in("artist_id", artists.map((a) => a.id));
+  if (plays?.length) {
+    const byArtist = new Map<string, number>();
+    for (const p of plays as { artist_id: string; views_count: number | null }[]) {
+      byArtist.set(p.artist_id, (byArtist.get(p.artist_id) ?? 0) + (p.views_count ?? 0));
+    }
+    for (const a of artists) a.playsCount = byArtist.get(a.id) ?? 0;
+  }
+  return artists;
 }
 
 // The homepage hero card. Whoever earned the most attention gets the slot —
