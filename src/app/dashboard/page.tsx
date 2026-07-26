@@ -14,6 +14,7 @@ import { PHONE_MESSAGE, CONTACT_IN_TEXT_MESSAGE } from "@/lib/validate";
 import { updateBookingStatus, updateListing, deleteListing, shareCard, updateMyProfile } from "./actions";
 import { removeVideo } from "./video-actions";
 import VideoUploader from "@/components/VideoUploader";
+import { formatViews } from "@/lib/format";
 import ShareButton from "@/components/ShareButton";
 
 export const metadata: Metadata = { title: "Dashboard | UAESinger" };
@@ -244,9 +245,9 @@ async function CreatorView({ userId }: { userId: string }) {
   const contactBy = new Map((contacts ?? []).map((c) => [c.artist_id, c]));
 
   const { data: videos } = ids.length
-    ? await supabase.from("artist_videos").select("id, artist_id, storage_path, url, title").in("artist_id", ids).order("created_at")
+    ? await supabase.from("artist_videos").select("id, artist_id, storage_path, url, title, views_count").in("artist_id", ids).order("created_at")
     : { data: [] };
-  const videosBy = new Map<string, { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null }[]>();
+  const videosBy = new Map<string, { id: string; artist_id: string; storage_path: string | null; url: string | null; title: string | null; views_count: number | null }[]>();
   for (const v of videos ?? []) {
     const arr = videosBy.get(v.artist_id) ?? [];
     arr.push(v);
@@ -426,6 +427,7 @@ async function CreatorView({ userId }: { userId: string }) {
                         <video src={v.url || (v.storage_path ? publicVideoUrl(v.storage_path) : "")} controls preload="metadata" className="w-full aspect-video object-cover bg-black" />
                         <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-white">
                           <span className="text-[11.5px] text-[var(--ink-dim)] truncate">{v.title || "Untitled"}</span>
+                          <span className="text-[11.5px] font-semibold text-[var(--ink-dim)] flex-shrink-0" title="Unique plays">▶ {formatViews(v.views_count ?? 0)}</span>
                           <form action={removeVideo}>
                             <input type="hidden" name="id" value={v.id} />
                             <input type="hidden" name="storagePath" value={v.storage_path ?? ""} />

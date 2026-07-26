@@ -1,25 +1,49 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
+import { formatViews } from "@/lib/format";
 
 // Shows the reel as a poster frame (first frame via preload="metadata") with a
 // play button overlaid. Clicking starts playback and swaps in native controls.
 // Works for both Cloudinary and Supabase sources — no separate thumbnail needed.
 export default function VideoReel({
   src,
+  videoId,
+  views = 0,
   className,
   children,
 }: {
   src: string;
+  videoId?: string;
+  views?: number;
   className?: string;
   children?: ReactNode;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [started, setStarted] = useState(false);
 
+  const counted = useRef(false);
+
   function play() {
     ref.current?.play();
     setStarted(true);
+  }
+
+  // First play only — the beacon is what the server counts (the API's
+  // (video_id, viewer_id) key dedupes across sessions), and the ref keeps a
+  // pause/resume from firing again within this one. A ref, not `started`:
+  // clicking the overlay sets that before the native play event arrives.
+  function onPlay() {
+    setStarted(true);
+    if (counted.current) return;
+    counted.current = true;
+    if (!videoId) return;
+    fetch("/api/video-view", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ videoId }),
+      keepalive: true,
+    }).catch(() => {});
   }
 
   return (
@@ -30,9 +54,21 @@ export default function VideoReel({
         controls={started}
         preload="metadata"
         playsInline
-        onPlay={() => setStarted(true)}
+        onPlay={onPlay}
         className={className}
       />
+
+      {/* Play count, over the poster frame. Hidden once playing so it never sits
+          on top of the native controls. */}
+      {!started && (
+        <span className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 text-[13px] font-semibold text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.6)] pointer-events-none">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 4l14 8-14 8V4z" />
+          </svg>
+          {formatViews(views)}
+          <span className="sr-only"> plays</span>
+        </span>
+      )}
 
       {!started && (
         <button

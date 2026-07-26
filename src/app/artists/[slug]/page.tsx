@@ -8,6 +8,7 @@ import { getAccess, isArtistLiked, isArtistThumbed, getLikedVideoIds, getThumbed
 import LikeButton from "@/components/LikeButton";
 import VideoLikeButton from "@/components/VideoLikeButton";
 import VideoReel from "@/components/VideoReel";
+import { formatViews } from "@/lib/format";
 import { getArtistBySlug } from "@/lib/talent";
 import { listArtistVideos } from "@/lib/videos";
 import { listReviews, getMyReview } from "@/lib/reviews";
@@ -114,7 +115,7 @@ export default async function ArtistPage({
                 <figure className="mx-auto w-fit max-w-full rounded-2xl overflow-hidden border border-[var(--line)] bg-black shadow-[0_16px_40px_rgba(16,26,38,0.10)]">
                   {/* No forced aspect box — the video sizes to its OWN shape (portrait reels
                       and landscape clips alike), just capped by height. Nothing crops or zooms. */}
-                  <VideoReel src={videos[0].src} className="block mx-auto w-auto max-w-full max-h-[min(70vh,560px)] bg-black">
+                  <VideoReel src={videos[0].src} videoId={videos[0].id} views={videos[0].viewsCount} className="block mx-auto w-auto max-w-full max-h-[min(70vh,560px)] bg-black">
                     {/* Chips sit at the top so they never cover the player controls. */}
                     <span className="absolute top-4 left-4 text-[12px] font-semibold text-white bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-md pointer-events-none">
                       {emoji} {categoryLabel(artist.category)} · {artist.city}
@@ -128,6 +129,13 @@ export default async function ArtistPage({
                   <figcaption className="flex items-center justify-between gap-3 px-4 py-3 bg-white">
                     <span className="text-[13px] font-semibold text-[var(--ink)] truncate">{videos[0].title || `${artist.name.split(" ")[0]}'s featured reel`}</span>
                     <span className="flex items-center gap-4 flex-shrink-0">
+                      {/* Stays visible while the video plays, unlike the overlay badge. */}
+                      <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--ink-dim)]" title="Unique plays">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M6 4l14 8-14 8V4z" />
+                        </svg>
+                        {formatViews(videos[0].viewsCount)}
+                      </span>
                       <VideoLikeButton videoId={videos[0].id} initialCount={videos[0].likesCount} initialLiked={likedVideoIds.has(videos[0].id)} />
                       <VideoLikeButton videoId={videos[0].id} initialCount={videos[0].thumbsCount} initialLiked={thumbedVideoIds.has(videos[0].id)} variant="thumb" />
                       <ShareButton path={`/artists/${artist.slug}`} title={`${videos[0].title || artist.name} on UAESinger`} className="text-[12.5px] font-semibold text-[var(--ink-dim)] hover:text-[var(--blue-dark)] transition-colors" />
