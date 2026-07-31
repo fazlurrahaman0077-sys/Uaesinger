@@ -23,7 +23,9 @@ const hanken = Hanken_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Hire Singers, DJs, Bands, MCs, Hosts, Photographers & Entertainers in Dubai & UAE | UAESinger.com",
+  // Brand first: for the query "uaesinger" Google was ranking our Facebook and
+  // Instagram above us, and the name was buried at the end of a 100-char title.
+  title: "UAESinger — Hire Singers, DJs, Bands, MCs & Entertainers in Dubai & UAE",
   description:
     "UAESinger.com connects clients across Dubai, Abu Dhabi, Sharjah and all Emirates with verified singers, DJs, bands, MCs, hosts, photographers and entertainers. Watch real performance videos and book talent for weddings, corporate events, and full-time roles.",
   keywords:
