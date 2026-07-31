@@ -52,3 +52,24 @@ export function bodyParagraphs(body: string | null): string[] {
     .filter(Boolean);
 }
 
+// Hand-written posts mention "UAESinger.com" and paste bare URLs as plain text.
+// Split a paragraph into text and link pieces so the page can render real anchors.
+const URL_RE = /(https?:\/\/[^\s<)]+|(?:www\.)?uaesinger\.com(?:\/[^\s<),]*)?)/gi;
+
+export type TextPart = string | { href: string; label: string };
+
+export function linkify(text: string): TextPart[] {
+  // split() with a capture group alternates text, match, text, match…
+  return text
+    .split(URL_RE)
+    .flatMap((piece, i): TextPart[] => {
+      if (i % 2 === 0) return [piece];
+      const label = piece.replace(/[.,;:!?]+$/, "");
+      const trailing = piece.slice(label.length);
+      const path = label.replace(/^(https?:\/\/)?(www\.)?uaesinger\.com/i, "");
+      const href = /^(https?:\/\/)?(www\.)?uaesinger\.com/i.test(label) ? path || "/" : label;
+      return [{ href, label }, trailing];
+    })
+    .filter((p) => p !== "");
+}
+

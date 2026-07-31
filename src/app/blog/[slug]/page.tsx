@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getPost, bodyParagraphs, isHtml } from "@/lib/blog";
+import { getPost, bodyParagraphs, isHtml, linkify } from "@/lib/blog";
 import { formatDate } from "@/lib/blog-view";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL } from "@/lib/site";
@@ -99,7 +99,19 @@ export default async function BlogPostPage({
             <div className="flex flex-col gap-5">
               {paragraphs.map((para, i) => (
                 <p key={i} className="text-[16px] text-[var(--ink-dim)] leading-relaxed">
-                  {para}
+                  {linkify(para).map((part, j) =>
+                    typeof part === "string" ? (
+                      part
+                    ) : part.href.startsWith("/") ? (
+                      <Link key={j} href={part.href} className="text-[var(--blue)] font-medium underline underline-offset-2">
+                        {part.label}
+                      </Link>
+                    ) : (
+                      <a key={j} href={part.href} rel="nofollow noopener" target="_blank" className="text-[var(--blue)] font-medium underline underline-offset-2">
+                        {part.label}
+                      </a>
+                    ),
+                  )}
                 </p>
               ))}
             </div>
