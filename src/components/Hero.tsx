@@ -28,7 +28,9 @@ export default async function Hero() {
           <div className="flex items-center gap-2.5 mb-6">
             <SoundBars bars={5} height={16} size={3} gap={2} />
             <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-[var(--amber)]">
-              Live entertainment · every Emirate
+              Welcome to UAESinger
+              {/* dropped on the narrowest screens so the eyebrow never wraps under the bars */}
+              <span className="hidden sm:inline text-white/45 font-semibold"> · live entertainment, every Emirate</span>
             </span>
           </div>
 
