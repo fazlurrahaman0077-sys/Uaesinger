@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getArtistBySlug } from "@/lib/talent";
-import { categoryLabel, priceRange, initials, publicPhotoUrl, CATEGORIES } from "@/lib/artists";
+import { categoryLabel, priceRange, initials, publicPhotoUrl } from "@/lib/artists";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -11,8 +11,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const artist = await getArtistBySlug(slug);
   const name = artist?.name ?? "UAE Singer";
-  const cat = artist ? `${CATEGORIES.find((c) => c.slug === artist.category)?.emoji ?? "🎤"}  ${categoryLabel(artist.category)}` : "Book live talent";
-  const city = artist?.city ?? "United Arab Emirates";
+  // ponytail: no emoji — satori has to download a font per emoji glyph and that call fails on Vercel
+  const cat = artist ? `${categoryLabel(artist.category)}  ·  ${artist.city}` : "Book live talent";
   const tagline = artist?.tagline ?? "Book verified singers, DJs, bands & entertainers across the UAE.";
   const price = artist ? priceRange(artist.priceMin, artist.priceMax) : null;
   const photo = artist?.photoPath ? publicPhotoUrl(artist.photoPath) : null;
@@ -26,12 +26,12 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             <span style={{ color: "white" }}>SINGER</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 24, color: "#DAC7EC", marginBottom: 12 }}>{cat}  ·  {city}</div>
+            <div style={{ display: "flex", fontSize: 24, color: "#DAC7EC", marginBottom: 12 }}>{cat}</div>
             <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, marginBottom: 18 }}>{name}</div>
             <div style={{ fontSize: 30, color: "#EADFF6", maxWidth: 620 }}>{tagline}</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            {artist && <div style={{ fontSize: 26, fontWeight: 700, color: "#F5A623" }}>★ {artist.rating.toFixed(1)}</div>}
+            {artist && <div style={{ display: "flex", fontSize: 26, fontWeight: 700, color: "#F5A623" }}>{`Rated ${artist.rating.toFixed(1)} / 5`}</div>}
             {price && <div style={{ fontSize: 26, background: "rgba(255,255,255,0.14)", padding: "8px 20px", borderRadius: 999 }}>{price}</div>}
           </div>
         </div>
