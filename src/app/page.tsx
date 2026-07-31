@@ -25,7 +25,8 @@ export const revalidate = 300;
 // The site had no Organization markup, so Google had no entity to attach the
 // name "UAESinger" to — hence "Did you mean: uae singer" and our own social
 // profiles outranking us. alternateName covers the spaced spelling.
-// TODO: add the Facebook/Instagram/YouTube profile URLs to sameAs.
+// sameAs is what tells Google the profiles outranking us are the same entity.
+// TODO: add the YouTube channel alongside Instagram and Facebook.
 const orgJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -36,6 +37,10 @@ const orgJsonLd = {
       alternateName: ["UAE Singer", "UAESinger.com"],
       url: SITE_URL,
       logo: `${SITE_URL}/icon-192.png`,
+      sameAs: [
+        "https://www.instagram.com/uaesinger",
+        "https://www.facebook.com/people/UAESinger/61561809433252/",
+      ],
       description:
         "UAESinger connects clients across the UAE with verified singers, DJs, bands, MCs, hosts and photographers for weddings, corporate events and national days.",
       areaServed: { "@type": "Country", name: "United Arab Emirates" },
