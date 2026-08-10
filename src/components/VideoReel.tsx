@@ -10,6 +10,7 @@ export default function VideoReel({
   src,
   videoId,
   views = 0,
+  poster,
   className,
   wrapperClassName = "",
   children,
@@ -17,6 +18,10 @@ export default function VideoReel({
   src: string;
   videoId?: string;
   views?: number;
+  // preload="metadata" only paints a first frame if the browser feels like it —
+  // Safari and most mobile browsers render the black <video> box instead. The
+  // creator's cover image fills that gap until the first frame decodes.
+  poster?: string;
   className?: string;
   wrapperClassName?: string; // lets a caller drop the player into an aspect box
   children?: ReactNode;
@@ -57,6 +62,7 @@ export default function VideoReel({
       <video
         ref={ref}
         src={src}
+        poster={poster}
         controls={started}
         preload="metadata"
         playsInline

@@ -2,7 +2,7 @@ import Link from "next/link";
 import SoundBars from "@/components/SoundBars";
 import VideoReel from "@/components/VideoReel";
 import { getSpotlightArtist } from "@/lib/talent";
-import { categoryLabel } from "@/lib/artists";
+import { artistImage, categoryLabel } from "@/lib/artists";
 import { formatViews } from "@/lib/format";
 
 // Signature hero: a darkened stage with an amber spotlight bloom behind a
@@ -90,6 +90,7 @@ export default async function Hero() {
                   src={spotlight.video.src}
                   videoId={spotlight.video.id}
                   views={spotlight.video.viewsCount}
+                  poster={artistImage(spotlight.artist.slug, spotlight.artist.category, spotlight.artist.photoPath)}
                   wrapperClassName="absolute inset-0"
                   className="w-full h-full object-cover"
                 />
