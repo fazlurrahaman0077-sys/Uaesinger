@@ -204,7 +204,7 @@ export async function createPost(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/blog");
-  redirect("/admin?saved=post");
+  redirect("/admin/posts?saved=post");
 }
 
 export async function updatePost(formData: FormData) {
@@ -220,7 +220,7 @@ export async function updatePost(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
-  redirect("/admin?saved=post");
+  redirect("/admin/posts?saved=post");
 }
 
 // Publish / unpublish from the admin list (draft <-> live).
@@ -232,7 +232,7 @@ export async function togglePost(formData: FormData) {
     .eq("id", String(formData.get("id")));
   revalidatePath("/admin");
   revalidatePath("/blog");
-  redirect("/admin?saved=post");
+  redirect("/admin/posts?saved=post");
 }
 
 export async function deletePost(formData: FormData) {
@@ -240,5 +240,5 @@ export async function deletePost(formData: FormData) {
   await supabase.from("posts").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin");
   revalidatePath("/blog");
-  redirect("/admin?saved=deleted");
+  redirect("/admin/posts?saved=deleted");
 }
