@@ -173,7 +173,6 @@ export default async function ArtistPage({
                   {artist.experienceYears !== null && (
                     <Fact label="Experience" value={`${artist.experienceYears} yr${artist.experienceYears === 1 ? "" : "s"}`} />
                   )}
-                  <Fact label="Gigs completed" value={String(artist.gigs)} />
                   <Fact label="Response rate" value={`${artist.responseRate}%`} />
                   <Fact label="Based in" value={artist.city} />
                   <Fact label="Availability" value={artist.availability} />

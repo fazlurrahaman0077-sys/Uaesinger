@@ -62,14 +62,13 @@ export default function ArtistCard({ artist }: { artist: Artist & { id: string }
           </span>
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[11.5px] text-[var(--ink-faint)]">{artist.gigs} gigs</p>
-          {priceRange(artist.priceMin, artist.priceMax) && (
-            <p className="text-[11.5px] font-semibold text-[var(--ink)] whitespace-nowrap">
-              {priceRange(artist.priceMin, artist.priceMax)}
-            </p>
-          )}
-        </div>
+        {/* Gigs dropped alongside the profile's "Gigs completed" — nothing ever
+            increments the column, so every card read "0 gigs". */}
+        {priceRange(artist.priceMin, artist.priceMax) && (
+          <p className="text-[11.5px] font-semibold text-[var(--ink)] text-right whitespace-nowrap">
+            {priceRange(artist.priceMin, artist.priceMax)}
+          </p>
+        )}
         <div className="mt-3 pt-3 border-t border-[var(--line)] flex items-center justify-between">
           <span className="text-[11.5px] font-medium text-[var(--ink-dim)] flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
