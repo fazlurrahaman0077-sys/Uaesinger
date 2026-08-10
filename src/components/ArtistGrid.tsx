@@ -7,7 +7,7 @@ import { listArtists } from "@/lib/talent";
 
 export default async function ArtistGrid() {
   const all = await listArtists();
-  const featured = all.slice(0, 6);
+  const featured = all.slice(0, 18);
 
   return (
     <div id="talent">
@@ -71,8 +71,10 @@ export default async function ArtistGrid() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {/* Stagger per row only — 18 cards at 80ms each would leave the
+                  last one blank for over a second. */}
               {featured.map((a, i) => (
-                <Reveal key={a.slug} delay={i * 80}>
+                <Reveal key={a.slug} delay={(i % 3) * 80}>
                   <ArtistCard artist={a} />
                 </Reveal>
               ))}
