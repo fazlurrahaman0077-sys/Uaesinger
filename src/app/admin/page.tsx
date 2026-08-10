@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import FilterRows from "@/components/FilterRows";
 import Header from "@/components/Header";
-import { requireAdmin } from "@/lib/admin";
-import { toggleArtist, deleteArtist, togglePost, deletePost, deleteUser, deleteUserContent, deleteMessage, adminUpdateUser } from "./actions";
+import { requireAdmin, btn, btnDanger } from "@/lib/admin";
+import { toggleArtist, deleteArtist, deleteUser, deleteUserContent, deleteMessage, adminUpdateUser } from "./actions";
 
 export const metadata: Metadata = { title: "Admin | UAESinger" };
 
@@ -15,6 +14,11 @@ const SAVED_MESSAGE: Record<string, string> = {
   message: "Message deleted.",
   deleted: "Deleted.",
 };
+
+const USER_GROUPS = [
+  { title: "Artist profiles", roles: ["artist"], empty: "No artists have signed up yet." },
+  { title: "Hirers", roles: ["hirer", "admin"], empty: "No hirers yet." },
+];
 
 const ERROR_MESSAGE: Record<string, string> = {
   self: "You can't delete or demote your own admin account.",
@@ -112,17 +116,21 @@ export default async function AdminPage({
             ))}
           </div>
 
-          {/* Users */}
-          <section className="mb-12">
+          {/* Users, split by what they're here to do. One `role` column, so the
+              buckets are exclusive; admins ride along with the hirers. */}
+          {USER_GROUPS.map((g) => {
+            const rows = (profiles ?? []).filter((u) => g.roles.includes(u.role));
+            return (
+          <section key={g.title} className="mb-12">
             <h2 className="font-display text-[20px] font-semibold text-[var(--ink)] mb-4">
-              Users <span className="text-[13px] font-normal text-[var(--ink-faint)]">({(profiles ?? []).length})</span>
+              {g.title} <span className="text-[13px] font-normal text-[var(--ink-faint)]">({rows.length})</span>
             </h2>
             <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden">
-              {(profiles ?? []).length === 0 ? (
-                <p className="px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">No users yet.</p>
+              {rows.length === 0 ? (
+                <p className="px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">{g.empty}</p>
               ) : (
                 <div className="divide-y divide-[var(--line)]">
-                  {profiles!.map((u) => (
+                  {rows.map((u) => (
                     <div key={u.id} className="px-5 py-3 text-[13px] flex flex-wrap items-center gap-3">
                       {/* Name + role are editable inline; email comes from auth and is read-only. */}
                       <form action={adminUpdateUser} className="flex items-center gap-2 flex-1 min-w-[280px]">
@@ -174,6 +182,8 @@ export default async function AdminPage({
               profile — the login itself survives until a service-role key is configured.
             </p>
           </section>
+            );
+          })}
 
           {/* Support messages — new-message notification */}
           <section className="mb-12">
@@ -287,64 +297,26 @@ export default async function AdminPage({
             </div>
           </section>
 
-          {/* Blog */}
+          {/* Blog — the list moved to its own page; this is the doorway. */}
           <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-[20px] font-semibold text-[var(--ink)]">Blog</h2>
-              <Link href="/admin/posts/new" className="text-[13px] font-semibold px-4 py-2 rounded-lg bg-[var(--blue)] text-white hover:bg-[var(--blue-dark)] transition-all">
-                + New post
-              </Link>
-            </div>
-            {(posts ?? []).length === 0 ? (
-              <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden">
-                <p className="px-5 py-8 text-center text-[13px] text-[var(--ink-dim)]">No posts yet. Write your first one.</p>
+            <div className="flex items-center justify-between gap-4 bg-white border border-[var(--line)] rounded-2xl px-5 py-4">
+              <div>
+                <h2 className="font-display text-[20px] font-semibold text-[var(--ink)]">Blog</h2>
+                <p className="text-[12.5px] text-[var(--ink-dim)] mt-0.5">
+                  {(posts ?? []).length} post{(posts ?? []).length === 1 ? "" : "s"} ·{" "}
+                  {(posts ?? []).filter((p) => p.published).length} live
+                </p>
               </div>
-            ) : (
-              <FilterRows placeholder="Search posts by title, category or slug…">
-                <div className="bg-white border border-[var(--line)] rounded-2xl overflow-hidden divide-y divide-[var(--line)]">
-                  {posts!.map((p) => (
-                    <div
-                      key={p.id}
-                      data-search={`${p.title} ${p.category ?? ""} ${p.slug} ${p.published ? "live" : "draft"}`.toLowerCase()}
-                      className="flex items-center gap-3 px-5 py-3 text-[13px]"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <Link href={`/blog/${p.slug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--blue-dark)]">
-                          {p.title}
-                        </Link>
-                        <span className="text-[var(--ink-faint)]"> · {p.category}</span>
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                          p.published ? "bg-green-50 text-green-700" : "bg-[var(--bg3)] text-[var(--ink-faint)]"
-                        }`}
-                      >
-                        {p.published ? "Live" : "Draft"}
-                      </span>
-                      <Link href={`/admin/posts/${p.id}/edit`} className={btn}>Edit</Link>
-                      <form action={togglePost}>
-                        <input type="hidden" name="id" value={p.id} />
-                        <input type="hidden" name="publish" value={(!p.published).toString()} />
-                        <button className={btn}>{p.published ? "Unpublish" : "Publish"}</button>
-                      </form>
-                      <form action={deletePost}>
-                        <input type="hidden" name="id" value={p.id} />
-                        <button className={btnDanger}>Delete</button>
-                      </form>
-                    </div>
-                  ))}
-                </div>
-              </FilterRows>
-            )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Link href="/admin/posts" className={btn}>Manage posts</Link>
+                <Link href="/admin/posts/new" className="text-[13px] font-semibold px-4 py-2 rounded-lg bg-[var(--blue)] text-white hover:bg-[var(--blue-dark)] transition-all whitespace-nowrap">
+                  + New post
+                </Link>
+              </div>
+            </div>
           </section>
         </div>
       </main>
     </>
   );
 }
-
-// Shared small action buttons for the admin lists.
-const btn =
-  "text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-[var(--line)] text-[var(--ink-dim)] hover:border-[var(--blue)] hover:text-[var(--blue-dark)] transition-all whitespace-nowrap";
-const btnDanger =
-  "text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-red-200 text-[var(--coral)] hover:bg-red-50 transition-all whitespace-nowrap";
