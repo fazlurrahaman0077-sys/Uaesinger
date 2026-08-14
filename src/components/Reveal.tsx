@@ -23,6 +23,10 @@ export default function Reveal({
       setShown(true);
       return;
     }
+    // threshold MUST stay 0. A ratio threshold is unreachable for any element
+    // taller than ~8x the viewport: the grid is one column on mobile, so it
+    // never intersects 12% of itself at once and the section stayed at
+    // opacity 0 forever. 0 fires as soon as a single pixel enters.
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -30,7 +34,7 @@ export default function Reveal({
           io.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0, rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();

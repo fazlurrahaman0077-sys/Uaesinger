@@ -1,6 +1,5 @@
 import Link from "next/link";
 import ArtistCard from "@/components/ArtistCard";
-import Reveal from "@/components/Reveal";
 import SoundBars from "@/components/SoundBars";
 import { CATEGORIES } from "@/lib/artists";
 import { listArtists } from "@/lib/talent";
@@ -71,12 +70,12 @@ export default async function ArtistGrid() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {/* Stagger per row only — 18 cards at 80ms each would leave the
-                  last one blank for over a second. */}
-              {featured.map((a, i) => (
-                <Reveal key={a.slug} delay={(i % 3) * 80}>
-                  <ArtistCard artist={a} />
-                </Reveal>
+              {/* No Reveal here. These cards are the page's LCP element and the
+                  product itself — they must paint with the HTML, not wait for
+                  hydration. Wrapping them meant 18 opacity-0 nodes and 18
+                  observers on mobile, blank until the JS bundle landed. */}
+              {featured.map((a) => (
+                <ArtistCard key={a.slug} artist={a} />
               ))}
             </div>
           )}

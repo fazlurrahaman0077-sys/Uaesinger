@@ -3,7 +3,6 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ArtistCard from "@/components/ArtistCard";
-import Reveal from "@/components/Reveal";
 import { CATEGORIES, SUBCATEGORIES, getCategory } from "@/lib/artists";
 import { listArtists } from "@/lib/talent";
 import FilterBar from "@/components/FilterBar";
@@ -95,12 +94,11 @@ export default async function ArtistsPage({ searchParams }: { searchParams: Prom
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {list.map((a, i) => (
-                  // Stagger caps at the first row or two — later cards shouldn't
-                  // wait seconds to appear on a long results page.
-                  <Reveal key={a.slug} delay={Math.min(i, 5) * 70}>
-                    <ArtistCard artist={a} />
-                  </Reveal>
+                {/* Results paint with the HTML — see ArtistGrid. A long results
+                    page is one tall column on mobile, which is exactly the case
+                    where the reveal never fired. */}
+                {list.map((a) => (
+                  <ArtistCard key={a.slug} artist={a} />
                 ))}
               </div>
             )}

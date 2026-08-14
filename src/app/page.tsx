@@ -63,7 +63,7 @@ export default function Home() {
       <main>
         <Hero />
         <Reveal><TrustBar /></Reveal>
-        <Reveal><ArtistGrid /></Reveal>
+        <ArtistGrid />
         <Reveal><Cities /></Reveal>
         <Reveal><HowItWorks /></Reveal>
         <Reveal><Testimonials /></Reveal>
