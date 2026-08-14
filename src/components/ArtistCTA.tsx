@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const PERKS = [
   "Your contact stays private until a client subscribes",
   "No commission taken on any booking you close",
@@ -30,9 +32,15 @@ export default function ArtistCTA() {
               </div>
             ))}
           </div>
-          <button className="px-7 py-3.5 rounded-xl bg-[var(--blue)] text-white text-[14.5px] font-semibold hover:bg-white hover:text-[var(--blue-deep)] transition-all shadow-[0_12px_32px_rgba(43,127,214,0.3)] cursor-pointer border-none">
+          {/* Was a bare <button> with no handler and no href — it looked
+              clickable and did nothing. Every other CTA on the site links to
+              /artists/new; this one now matches. */}
+          <Link
+            href="/artists/new"
+            className="inline-block px-7 py-3.5 rounded-xl bg-[var(--blue)] text-white text-[14.5px] font-semibold hover:bg-white hover:text-[var(--blue-deep)] transition-all shadow-[0_12px_32px_rgba(43,127,214,0.3)]"
+          >
             Create your artist profile →
-          </button>
+          </Link>
         </div>
 
         {/* Quote card */}
