@@ -65,7 +65,7 @@ export default function Select({
       {open && (
         <ul
           role="listbox"
-          className="absolute z-50 mt-1.5 w-full max-h-64 overflow-auto bg-white border border-[var(--line)] rounded-xl shadow-[0_16px_40px_rgba(16,26,38,0.14)] py-1.5"
+          className="absolute z-50 mt-1.5 w-full max-h-80 overflow-auto bg-white border border-[var(--line)] rounded-xl shadow-[0_16px_40px_rgba(16,26,38,0.14)] py-1.5"
         >
           {searchable && (
             <li className="px-2 pb-1.5 sticky top-0 bg-white">
