@@ -15,9 +15,14 @@ const CITIES = [
     tags: ["Dancers", "Family entertainers", "Event staff"],
   },
   {
-    title: "Talent in Ajman, RAK, Fujairah & UAQ",
+    title: "Resort & beach entertainment in Fujairah",
+    desc: "Singers, acoustic duos and photographers for Fujairah's beach resorts and mountain venues, covering destination weddings and corporate retreats on the east coast.",
+    tags: ["Resort events", "Destination weddings", "Acoustic sets"],
+  },
+  {
+    title: "Talent in Ajman, RAK & Umm Al Quwain",
     desc: "Growing directory of singers, photographers, and entertainers based in or willing to travel to the Northern Emirates for weddings and resort events.",
-    tags: ["Resort events", "Weddings", "Travel-ready talent"],
+    tags: ["Weddings", "Travel-ready talent", "Event staff"],
   },
 ];
 
